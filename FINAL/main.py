@@ -173,63 +173,14 @@ def main(page: ft.Page):
         # ----------------------
         # DASHBOARD PAGE
         # ----------------------
-        def show_dashboard_page():
-            owner_title = ft.Text("Owner Dashboard", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.BROWN_900)
 
-            dashboard_cards = ft.Row(
-                [
-                    ft.Container(
-                        width=210, height=140, bgcolor=ft.Colors.WHITE,
-                        border=ft.border.all(1, ft.Colors.BROWN_200),
-                        border_radius=8, alignment=ft.alignment.center,
-                        content=ft.Column(
-                            [
-                                ft.Icon(ft.Icons.SELL, color=ft.Colors.BROWN_700),
-                                ft.Text("Total Sales", size=13, weight=ft.FontWeight.BOLD, color=ft.Colors.BROWN_900)
-                            ],
-                            alignment=ft.MainAxisAlignment.CENTER,
-                        ),
-                    ),
-                    ft.Container(
-                        width=210, height=140, bgcolor=ft.Colors.WHITE,
-                        border=ft.border.all(1, ft.Colors.BROWN_200),
-                        border_radius=8, alignment=ft.alignment.center,
-                        content=ft.Column(
-                            [
-                                ft.Icon(ft.Icons.LOCAL_CAFE, color=ft.Colors.BROWN_700),
-                                ft.Text("Total Products", size=13, weight=ft.FontWeight.BOLD, color=ft.Colors.BROWN_900)
-                            ],
-                            alignment=ft.MainAxisAlignment.CENTER,
-                        ),
-                    ),
-                    ft.Container(
-                        width=210, height=140, bgcolor=ft.Colors.WHITE,
-                        border=ft.border.all(1, ft.Colors.BROWN_200),
-                        border_radius=8, alignment=ft.alignment.center,
-                        content=ft.Column(
-                            [
-                                ft.Icon(ft.Icons.WARNING, color=ft.Colors.RED_400),
-                                ft.Text("Low Stock Alert", size=13, weight=ft.FontWeight.BOLD, color=ft.Colors.BROWN_900)
-                            ],
-                            alignment=ft.MainAxisAlignment.CENTER,
-                        ),
-                    ),
-                    ft.Container(
-                        width=210, height=140, bgcolor=ft.Colors.WHITE,
-                        border=ft.border.all(1, ft.Colors.BROWN_200),
-                        border_radius=8, alignment=ft.alignment.center,
-                        content=ft.Column(
-                            [
-                                ft.Icon(ft.Icons.RECEIPT_LONG, color=ft.Colors.BROWN_700),
-                                ft.Text("Recent Orders", size=13, weight=ft.FontWeight.BOLD, color=ft.Colors.BROWN_900)
-                            ],
-                            alignment=ft.MainAxisAlignment.CENTER,
-                        ),
-                    ),
-                ],
-                alignment=ft.MainAxisAlignment.START,
-                spacing=35,
-            )
+        def show_dashboard_page():
+
+            def order_type_changed(e):
+                if e.control:
+                    print("Selected Order Type:", e.control.value)
+
+            owner_title = ft.Text("Making Orders", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.BROWN_900)
 
             dashboard_section = ft.Container(
                 padding=15,
@@ -239,13 +190,77 @@ def main(page: ft.Page):
                 bgcolor=ft.Colors.WHITE,
                 content=ft.Column(
                     [
-                        ft.Text("Dashboard Overview", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.BROWN_900),
+                        ft.Row(
+                            spacing=100,
+                            controls=[
+                                ft.Text("Customer Name", size=15, color=ft.Colors.BROWN_900),
+                                ft.Text("Order Date", size=15, color=ft.Colors.BROWN_900),
+                            ]
+                        ),
+#INPUT FIELDS
+                        ft.Row(
+                            spacing=60,
+                            controls=[
+                                ft.TextField(hint_text="Enter customer name", color=ft.Colors.BROWN_600, border=ft.InputBorder.OUTLINE, border_radius=5, bgcolor=ft.Colors.WHITE, width=200, filled=True),
+                                ft.TextField(hint_text="Enter Order Date", color=ft.Colors.BROWN_600, border=ft.InputBorder.OUTLINE, border_radius=5, bgcolor=ft.Colors.WHITE, width=200, filled=True),
+                            ]                              
+                        ),
+                        
+                        ft.Text("Order Type", size=15, color=ft.Colors.BROWN_900),
+
+                        ft.Row(
+                            spacing=60,
+                            controls=[
+                                ft.Dropdown(
+                                    width=200,
+                                    color=ft.Colors.BROWN_600,
+                                    value="Dine in",
+                                    options=[
+                                        ft.dropdown.Option("Dine in"),
+                                        ft.dropdown.Option("Take out"),
+                                    ],
+                                    on_change=order_type_changed
+                                ),
+                                ]
+                                ),
+
+                        ft.Row(
+                            spacing=60,
+                            controls=[
+                                ft.TextField(hint_text="Search Product...", color=ft.Colors.BROWN_600, border=ft.InputBorder.OUTLINE, border_radius=5, bgcolor=ft.Colors.WHITE, width=200, filled=True),
+                                ft.Dropdown(
+                                    width=200,
+                                    border=ft.InputBorder.OUTLINE,
+                                    border_radius=5,
+                                    bgcolor=ft.Colors.WHITE,
+                                    hint_text="Category",
+                                    options=[
+                                        ft.dropdown.Option("Coffee"),
+                                        ft.dropdown.Option("Pastry"),
+                                    ]
+                                )
+                            ]                              
+                        ),
+
+                        ft.Text("Product List:", size=15, color=ft.Colors.BROWN_900),
+
+                        ft.DataTable(columns=[
+                                    ft.DataColumn(ft.Text("Product")),
+                                    ft.DataColumn(ft.Text("Category")),
+                                    ft.DataColumn(ft.Text("Price")),
+                                    ft.DataColumn(ft.Text("Quantity")),
+                                    ft.DataColumn(ft.Text("Add")),
+                        ]
+
+                        ),
+
+                        
                         ft.Container(height=5),
-                        dashboard_cards
                     ],
-                    spacing=10,
-                ),
-            )
+                    spacing=10
+                )
+                )
+
 
             dashboard_view = ft.Column(
                 [
@@ -268,7 +283,7 @@ def main(page: ft.Page):
         # ----------------------
         def show_product_management_page():
             title = ft.Text(
-                "🛍️ Product and Price Management",
+                "Product and Price Management",
                 size=22,
                 weight=ft.FontWeight.BOLD,
                 color=ft.Colors.BROWN_900,
@@ -343,8 +358,14 @@ def main(page: ft.Page):
                 price_field = ft.TextField(label="Price (₱)", width=300, keyboard_type=ft.KeyboardType.NUMBER)
 
                 def add_to_db(ev):
+                    if not name_field.value.strip() or not category_field.value.strip() or not price_field.value.strip():
+                        page.snack_bar = ft.SnackBar(ft.Text("All fields are required!"))
+                        page.snack_bar.open = True
+                        page.update()
+                        return
+
                     try:
-                        add_product(name_field.value, category_field.value, float(price_field.value))
+                        add_product(name_field.value.strip(), category_field.value.strip(), float(price_field.value.strip()))
                         page.dialog.open = False
                         refresh_products()
                     except ValueError:

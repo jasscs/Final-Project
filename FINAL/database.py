@@ -1,4 +1,6 @@
 import sqlite3
+import os
+print("Database path:", os.path.abspath("coffeestry.db"))
 
 def get_connection():
     conn = sqlite3.connect("coffeestry.db")
