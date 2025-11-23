@@ -123,17 +123,8 @@ EMERGING TECHNOLOGY LAYER
 ## Screenshots for this task
 
 ### LIGHTMODE
-![alt text](lightmode.png)
-
-### DARKMODE
-![alt text](darkmode.png)
-
-### HISTORY
-![alt text](history.png)
 
 ## Installation
-
-
  -Python 3.8 or higher
 - pip package manage
 
