@@ -1,8 +1,7 @@
 import flet as ft 
-from database import get_connection, add_product, delete_product
-from flet import TextField, ElevatedButton, Text, Row, Column
+from database import get_connection, add_product, get_products, delete_product
 from prod import products
- 
+from flet import TextField, ElevatedButton, Text, Row, Column 
 
 def main(page: ft.Page): #THE BROWN ONE IN THE TOP
     page.title = "Coffeestry System"
@@ -196,7 +195,8 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
             owner_title = ft.Text("Making Orders", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.BROWN_900)
 
             cart_items = []
-
+            
+#responsible for the cart table and product table 
             cart_table = ft.DataTable(
                 columns=[
                     ft.DataColumn(ft.Text("Product", color=ft.Colors.BROWN_700)),
@@ -287,6 +287,7 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
                 rows=product_rows
             )
 
+#handles table for making orders
             dashboard_section = ft.Container(
                 bgcolor=ft.Colors.WHITE,
                 padding=20,
@@ -377,24 +378,43 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
   
  # PRODUCT MANAGEMENT
  # NEED SOME CHANGES PA HEREEEEE
-        
-        
-# REFRESH PRODUCTS
+        def layout6():
+            
+            products = []
+            selected_product = None
+       
+       
+#search products        
+            search_field = ft.TextField(
+                hint_text="Search products...",
+                prefix_icon=ft.Icons.SEARCH,
+                width=400,
+                bgcolor=ft.Colors.WHITE,
+                on_change=lambda e: layout7()
+            )
+         
+#PRODUCT TABLE
 #NEED SOME CHANGES PA HEREEEEE
         
-        # PRODUCT MANAGEMENT (FULLY FUNCTIONAL)
-        def layout6():
-            # Temporary product list (replace with actual DB later)
-            product_list = []
-
-            selected_product = None
-            product_container = ft.Container(expand=True)
-
-            # ---------- SHOW PRODUCT LIST ----------
-            def layout_products():
+            def layout7(): #for refreshing the product list
+                main_content.content = layout8()
+                page.update()
+    
+        
+# ADD PRODUCT DIALOG
+#WALA PA MAN ITONG FUNCTION
+            def layout8():
+                query = search_field.value.lower()
+                
+                filtered = [
+                    p for p in products
+                    if query in p["name"].lower()
+                    or query in p["category"].lower()
+                    or query in str(p["price"])
+                ]
+                
                 table_rows = []
-
-                for p in product_list:
+                for p in filtered:
                     table_rows.append(
                         ft.DataRow(
                             cells=[
@@ -404,77 +424,70 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
                                 ft.DataCell(
                                     ft.Row([
                                         ft.IconButton(ft.Icons.EDIT,
-                                              on_click=lambda e, prod=p: open_edit(prod)),
+                                                      on_click=lambda e, prod=p: open_edit(prod)),
                                         ft.IconButton(ft.Icons.DELETE,
-                                              on_click=lambda e, prod=p: delete_product(prod)),
+                                                      on_click=lambda e, prod=p: delete_product(prod)),
                                     ])
                                 )
                             ]
+                        )   
                         )
-                    )
-
-                product_container.content = ft.Column(
+                    
+                #UI LAYOUT FOR PRODUCT TABLE
+                return ft.Column(
                     [
-                        ft.Text("Product and Price Management", size=22,
-                                weight=ft.FontWeight.BOLD,
-                                color=ft.Colors.BROWN_900),
-
+                        ft.Text("Product and Price Management", size=22, weight=ft.FontWeight.BOLD, color=ft.Colors.BROWN_900),
                         ft.Row(
                             [
-                                ft.TextField(hint_text="Search Products...",
-                                             width=250, bgcolor=ft.Colors.WHITE),
-                                ft.IconButton(ft.Icons.ADD_CIRCLE,
-                                              on_click=open_add,
-                                              icon_color=ft.Colors.BROWN_700),
+                                search_field,
+                                ft.IconButton(ft.Icons.ADD_CIRCLE, on_click=open_add),
                             ],
                             spacing=10
                         ),
-
                         ft.DataTable(
                             columns=[
-                                ft.DataColumn(ft.Text("Product")),
-                                ft.DataColumn(ft.Text("Category")),
-                                ft.DataColumn(ft.Text("Price")),
-                                ft.DataColumn(ft.Text("Action")),
+                                ft.DataColumn(ft.Text("Product Name", color=ft.Colors.BROWN_700)),
+                                ft.DataColumn(ft.Text("Category", color=ft.Colors.BROWN_700)),
+                                ft.DataColumn(ft.Text("Price (₱)", color=ft.Colors.BROWN_700)),
+                                ft.DataColumn(ft.Text("Actions", color=ft.Colors.BROWN_700)),
                             ],
                             rows=table_rows,
-                            width=800
+                            width=800,
                         )
                     ],
-                    spacing=20
-                )
+                    expand=True
+                    )
+                                          
+#ICON FOR ADD PRODUCT
 
-                page.update()
-
-            # ---------- OPEN ADD PRODUCT FORM ----------
-            def open_add(e=None):
+            def open_add(e):
                 nonlocal selected_product
                 selected_product = None
-                product_container.content = layout_add_edit()
+                main_content.content = layout_add_edit()
                 page.update()
-
-            # ---------- OPEN EDIT PRODUCT FORM ----------
+                
+#editing the product            
             def open_edit(product):
                 nonlocal selected_product
                 selected_product = product
-                product_container.content = layout_add_edit(product)
+                main_content.content = layout_add_edit(product)
                 page.update()
-
-            # ---------- DELETE PRODUCT ----------
+                
+#deleting product                
             def delete_product(product):
-                product_list.remove(product)
-                layout_products()
-
-            # ---------- SAVE PRODUCT ----------
+                products.remove(product)
+                layout7()
+                
             def save_product(e, name_field, category_field, price_field):
-                nonlocal selected_product
                 name = name_field.value
                 category = category_field.value
                 price = float(price_field.value)
-
+                
+                nonlocal selected_product
+                
                 if selected_product is None:
-                    product_list.append({
-                        "id": len(product_list) + 1,
+                    products.append({
+                        "id": len(products)+1,
                         "name": name,
                         "category": category,
                         "price": price,
@@ -483,32 +496,28 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
                     selected_product["name"] = name
                     selected_product["category"] = category
                     selected_product["price"] = price
-
-                layout_products()
-
-            # ---------- ADD/EDIT FORM ----------
+                    
+                layout7()
+                
             def layout_add_edit(prod=None):
-                name_field = ft.TextField(
-                    label="Product Name", width=350,
-                    value=prod["name"] if prod else ""
-                )
-
-                category_field = ft.TextField(
-                    label="Category", width=350,
-                    value=prod["category"] if prod else "Coffee"
-                )
-
-                price_field = ft.TextField(
-                    label="Price", width=350,
-                    value=str(prod["price"]) if prod else ""
-                )
-
-                return ft.Column(
+                
+                name_field = ft.TextField(label="Product Name", width=350, color=ft.Colors.BROWN_900,
+                                          value=prod["name"] if prod else "")
+                category_field = ft.TextField(label="Category", width=350, color=ft.Colors.BROWN_900,
+                                              value=prod["category"] if prod else "")
+                price_field = ft.TextField(label="Price", width=350, color=ft.Colors.BROWN_900,
+                                           value=str(prod["price"]) if prod else "")
+                
+                return Column(
                     [
-                        ft.Text("Product and Price Management", size=22,
-                                weight=ft.FontWeight.BOLD,
-                                color=ft.Colors.BROWN_900),
-
+                        ft.Text("Product and Price Management",
+                                size=20, weight=ft.FontWeight.BOLD),
+                        
+                        ft.Row([
+                            search_field,
+                            ft.IconButton(ft.Icons.ADD_CIRCLE),
+                        ], spacing=10),
+                        
                         ft.Container(
                             ft.Column(
                                 [
@@ -518,41 +527,31 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
                                     ft.Row(
                                         [
                                             ft.ElevatedButton("Cancel",
-                                                              on_click=lambda e: layout_products()),
+                                                              on_click=lambda e: back_to_list()),
                                             ft.ElevatedButton("Save Product",
-                                                              on_click=lambda e: save_product(
-                                                                  e, name_field, category_field, price_field)),
-                                        ],
-                                        spacing=20
-                                    )
+                                            on_click=lambda e: save_product(
+                                                e, name_field, category_field, price_field)),
+                                        ], spacing=20
+                                        )
                                 ],
                                 spacing=20
                             ),
                             padding=20,
                             border=ft.border.all(1),
-                            border_radius=10,
-                            bgcolor=ft.Colors.WHITE,
+                            border_radius=8,
                             width=500
                         )
                     ],
-                    spacing=20
+                    expand=True,
                 )
+                    
+            def back_to_list():
+                layout7()
+            
+            layout7()
+            page.add(main_content)
 
-            # INITIAL LOAD
-            product_container.content = layout_products()
-
-            # Place inside main content
-            main_content.content = ft.Container(
-                padding=20,
-                bgcolor=ft.Colors.BROWN_100,
-                content=product_container
-            )
-            page.update()
-
-# ADD PRODUCT DIALOG
-#WALA PA MAN ITONG FUNCTION
-        
-
+                                        
 # SIDEBAR
         sidebar = ft.Container(
             bgcolor=ft.Colors.BROWN_500,
@@ -622,4 +621,5 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
 
 # START
     layout1()
-ft.app(target=main)        
+ft.app(target=main)
+                   

@@ -4,20 +4,39 @@ def main(page: ft.Page):
     page.title = "Coffeestry System"
     page.window_maximized = True
 
-    # --- Temporary list to simulate DB ---
-    products = []    # each item: {"id":1, "name":"...", "category":"...", "price":120}
+    # simulate DB
+    products = []         # list of {"id":1,"name":"Espresso","category":"Coffee","price":120}
+    selected_product = None
 
-    selected_product = None  # for edit mode
-
-    # Main container where pages will be swapped
     main_container = ft.Container(expand=True)
 
-    # ----------- FUNCTION: SHOW PRODUCT LIST (WIREFRAME 1) ----------
-    def layout_products():
+    # SEARCH FIELD (shared)
+    search_query = ft.TextField(
+        hint_text="Search Products...",
+        width=250,
+        on_change=lambda e: update_product_list()
+    )
 
-        # Define the table rows
+    # ---------------- REFRESH TABLE ----------------
+    def update_product_list():
+        main_container.content = layout_products()
+        page.update()
+
+    # ---------------- PRODUCT LIST SCREEN ----------------
+    def layout_products():
+        query = search_query.value.lower()
+
+        # Filter results
+        filtered = [
+            p for p in products
+            if query in p["name"].lower()
+            or query in p["category"].lower()
+            or query in str(p["price"])
+        ]
+
+        # Build table rows
         table_rows = []
-        for p in products:
+        for p in filtered:
             table_rows.append(
                 ft.DataRow(
                     cells=[
@@ -27,22 +46,23 @@ def main(page: ft.Page):
                         ft.DataCell(
                             ft.Row([
                                 ft.IconButton(ft.Icons.EDIT, 
-                                              on_click=lambda e, prod=p: open_edit(prod)),
+                                    on_click=lambda e, prod=p: open_edit(prod)),
                                 ft.IconButton(ft.Icons.DELETE, 
-                                              on_click=lambda e, prod=p: delete_product(prod)),
+                                    on_click=lambda e, prod=p: delete_product(prod)),
                             ])
                         )
                     ]
                 )
             )
 
-        # Build screen layout
+        # UI Layout
         return ft.Column(
             [
-                ft.Text("Product and Price Management", size=20, weight=ft.FontWeight.BOLD),
+                ft.Text("Product and Price Management",
+                        size=20, weight=ft.FontWeight.BOLD),
                 ft.Row(
                     [
-                        ft.TextField(hint_text="Search Products...", width=250),
+                        search_query,
                         ft.IconButton(ft.Icons.ADD_CIRCLE, on_click=open_add),
                     ],
                     spacing=10
@@ -61,27 +81,26 @@ def main(page: ft.Page):
             expand=True
         )
 
-    # -------- FUNCTION: OPEN ADD FORM (WIREFRAME 2) -----------
+    # ---------------- ADD PRODUCT ----------------
     def open_add(e):
         nonlocal selected_product
         selected_product = None
         main_container.content = layout_add_edit()
         page.update()
 
-    # -------- FUNCTION: OPEN EDIT FORM -----------
+    # ---------------- EDIT PRODUCT ----------------
     def open_edit(product):
         nonlocal selected_product
         selected_product = product
         main_container.content = layout_add_edit(product)
         page.update()
 
-    # -------- FUNCTION: DELETE PRODUCT -----------
+    # ---------------- DELETE PRODUCT ----------------
     def delete_product(product):
         products.remove(product)
-        main_container.content = layout_products()
-        page.update()
+        update_product_list()
 
-    # -------- FUNCTION: SAVE PRODUCT (ADD/EDIT) -----------
+    # ---------------- SAVE PRODUCT ----------------
     def save_product(e, name_field, category_field, price_field):
         name = name_field.value
         category = category_field.value
@@ -89,8 +108,7 @@ def main(page: ft.Page):
 
         nonlocal selected_product
 
-        if selected_product is None:
-            # Add new
+        if selected_product is None:  
             products.append({
                 "id": len(products)+1,
                 "name": name,
@@ -98,36 +116,32 @@ def main(page: ft.Page):
                 "price": price,
             })
         else:
-            # Edit existing
             selected_product["name"] = name
             selected_product["category"] = category
             selected_product["price"] = price
 
-        main_container.content = layout_products()
-        page.update()
+        update_product_list()
 
-    # -------- FUNCTION: BUILD ADD/EDIT FORM -----------
+    # ---------------- ADD / EDIT FORM SCREEN ----------------
     def layout_add_edit(prod=None):
 
         name_field = ft.TextField(label="Product Name", width=350,
                                   value=prod["name"] if prod else "")
-
         category_field = ft.TextField(label="Category", width=350,
-                                      value=prod["category"] if prod else "Coffee")
-
+                                      value=prod["category"] if prod else "")
         price_field = ft.TextField(label="Price", width=350,
                                    value=str(prod["price"]) if prod else "")
 
         return ft.Column(
             [
-                ft.Text("Product and Price Management", size=20, weight=ft.FontWeight.BOLD),
-                ft.Row(
-                    [
-                        ft.TextField(hint_text="Search Products...", width=250),
-                        ft.IconButton(ft.Icons.ADD_CIRCLE),
-                    ],
-                    spacing=10
-                ),
+                ft.Text("Product and Price Management",
+                        size=20, weight=ft.FontWeight.BOLD),
+
+                ft.Row([
+                    search_query,
+                    ft.IconButton(ft.Icons.ADD_CIRCLE),
+                ], spacing=10),
+
                 ft.Container(
                     ft.Column(
                         [
@@ -157,13 +171,11 @@ def main(page: ft.Page):
             expand=True
         )
 
-    # -------- BACK TO PRODUCT LIST ----------
     def back_to_list():
-        main_container.content = layout_products()
-        page.update()
+        update_product_list()
 
     # INITIAL LOAD
-    main_container.content = layout_products()
+    update_product_list()
     page.add(main_container)
 
 
