@@ -577,27 +577,7 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
                         color=ft.Colors.WHITE,
                         on_click=lambda e: layout6(),
                     ),
-                    ft.ElevatedButton(
-                        "Financial Reports",
-                        icon=ft.Icons.ASSESSMENT,
-                        width=200,
-                        bgcolor=ft.Colors.BROWN_700,
-                        color=ft.Colors.WHITE,
-                    ),
-                    ft.ElevatedButton(
-                        "Inventory & Supplier Management",
-                        icon=ft.Icons.STORE,
-                        width=200,
-                        bgcolor=ft.Colors.BROWN_700,
-                        color=ft.Colors.WHITE,
-                    ),
-                    ft.ElevatedButton(
-                        "User Management",
-                        icon=ft.Icons.MANAGE_ACCOUNTS,
-                        width=200,
-                        bgcolor=ft.Colors.BROWN_700,
-                        color=ft.Colors.WHITE,
-                    ),
+
                     ft.Container(expand=True),
                     ft.ElevatedButton(
                         "Logout",
@@ -622,4 +602,3 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
 # START
     layout1()
 ft.app(target=main)
-                   
