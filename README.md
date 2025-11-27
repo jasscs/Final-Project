@@ -1,4 +1,4 @@
-# FINAL PROJECT
+# FINAL PROJECT - TEAM COFFEESTRY
 
 ##### COURSE: APPLICATION DEVELOPMENT AND EMERGING TECHNOLOGIES (CCCS 106)
 Joint Collaboration: CS 3110 – Software Engineering (Team Process & Engineering Practices)\
@@ -13,6 +13,17 @@ Term: AY 2025–2026 (Finals)
 - **Course**: CCCS 106
 - **Section**: BSCS 3B
 
+#
+- **Name**: Jenny Ibarrientos
+- **Student ID**: 23100
+- **Course**: CCCS 106
+- **Section**: BSCS 3B
+#
+- **Name**: Janice Laceda
+- **Student ID**: 23104627
+- **Course**: CCCS 106
+- **Section**: BSCS 3B
+
 ### Project Overview and Problem Statement
 The Coffeestry System is a digital management application designed for coffee and pastry shop owners. Many small business owners face difficulties in managing orders, tracking products, and maintaining accurate pricing and sales records. Traditional manual methods of record-keeping are often inefficient, time-consuming, and prone to errors, making it challenging to access information quickly or make informed business decisions.
 
@@ -22,20 +33,20 @@ The Coffeestry System is a digital management application designed for coffee an
 ### Feature List & Scope Table (what’s in/out)
 This is a list of all of the functions that Coffeestry system have:
 - [/] User Login / Authentication
-- [] Login Button
-- [] Logout Button
+- [/] Login Button
+- [/] Logout Button
 - [] Order Management
 - [] Create/Add Orders
 - [] Update/Edit Orders
 - [] Delete Orders
 - [] View Order History
-- [] Product Management
-- [] Add New Products
-- [] Update Product Details
-- [] Delete Products
-- [] Price Management
-- [] Update Product Prices
-- [] View Price List
+- [/] Product Management
+- [/] Add New Products
+- [/] Update Product Details
+- [/] Delete Products
+- [/] Price Management
+- [/] Update Product Prices
+- / View Price List
 - [] Customer Database
 - [] Store Customer Information
 - [] View Customer Records
@@ -67,7 +78,7 @@ DATA LAYER
 
 EMERGING TECHNOLOGY LAYER
 
-- hmm will try to implement the chosen emerging
+- 
 
 ### Data Model (ERD or JSON schema overview)
 [Users]
@@ -102,31 +113,26 @@ EMERGING TECHNOLOGY LAYER
 - amount
 
 ### Emerging Tech Explanation (why chosen, how integrated, limitations)
+- AI-assisted feature (e.g., text summary, categorization, simple rule-based or lightweight model inference; if using external APIs ensure fallback handling.) - Automatic Product Categorization - automatically categorizes a new product based of the name that will be inputted. (JUST AN INITIAL PLAN)
 
 ### Testing Summary (how to run, coverage notes)
 
 ### Team Roles & Contribution Matrix
+- Jasmin Francisco: - Product Lead / Vision & Feature Prioritization\
+UI/UX & Accessibility Designer\
+Lead Developer (Flet Architecture)\
+Documentation & Release Manager
+
+- Jenny Ibarrientos
+- Janice Laceda
 
 ### Risk / Constraint Notes & Future Enhancements
 
 ### Individual Reflection (per member: 150–200 words)
- 
+ - Jasmin Francisco
+ - Jenny Ibarrientos
+ - Janice Laceda
 
-
-### Enhanced Features
-1. **[Light/Dark Theme Toggle]**
-
-
-2. **[Search History]**
-
-
-## Screenshots for this task
-
-### LIGHTMODE
-
-## Installation
- -Python 3.8 or higher
-- pip package manage
 
 ### Setup & Run Instructions (including dependency install and platform targets)
 ```bash
