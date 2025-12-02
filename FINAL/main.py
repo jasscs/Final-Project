@@ -577,7 +577,17 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
                         bgcolor=ft.Colors.BROWN_700,
                         color=ft.Colors.WHITE,
                         on_click=lambda e: layout6(),
+                    ), 
+                    
+                    ft.ElevatedButton(
+                        "Order History",
+                        icon=ft.Icons.HISTORY,
+                        width=200,
+                        bgcolor=ft.Colors.BROWN_700,
+                        color=ft.Colors.WHITE,
+                       #on_click=lambda e: order_history(),
                     ),
+                      
 
                     ft.Container(expand=True),
                     ft.ElevatedButton(

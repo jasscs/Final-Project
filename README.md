@@ -1,6 +1,6 @@
 # FINAL PROJECT - TEAM COFFEESTRY
 
-##### COURSE: APPLICATION DEVELOPMENT AND EMERGING TECHNOLOGIES (CCCS 106)
+### COURSE: APPLICATION DEVELOPMENT AND EMERGING TECHNOLOGIES (CCCS 106)
 Joint Collaboration: CS 3110 – Software Engineering (Team Process & Engineering Practices)\
 Project Title: Emerging Tech Flet Framework\
 Assessment Type: Project & Final Examination \
@@ -20,15 +20,17 @@ Term: AY 2025–2026 (Finals)
 - **Section**: BSCS 3B
 #
 - **Name**: Janice Laceda
-- **Student ID**: 23104627
+- **Student ID**: 23100
 - **Course**: CCCS 106
 - **Section**: BSCS 3B
 
+#
 ### Project Overview and Problem Statement
 The Coffeestry System is a digital management application designed for coffee and pastry shop owners. Many small business owners face difficulties in managing orders, tracking products, and maintaining accurate pricing and sales records. Traditional manual methods of record-keeping are often inefficient, time-consuming, and prone to errors, making it challenging to access information quickly or make informed business decisions.
 
  The Coffeestry System provides a centralized digital database that securely stores important business information. It includes features for order management, allowing staff to process customer orders efficiently, and product and price management, ensuring that all menu items and prices are up-to-date. By digitizing these processes, Coffeestry helps business owners streamline operations, reduce errors, and save time, ultimately improving overall business efficiency and decision-making.
 
+#
 
 ### Feature List & Scope Table (what’s in/out)
 This is a list of all of the functions that Coffeestry system have:
@@ -46,7 +48,7 @@ This is a list of all of the functions that Coffeestry system have:
 - [/] Delete Products
 - [/] Price Management
 - [/] Update Product Prices
-- / View Price List
+- [] View Price List
 - [] Customer Database
 - [] Store Customer Information
 - [] View Customer Records
@@ -57,9 +59,13 @@ This is a list of all of the functions that Coffeestry system have:
 - []
 - []
 
-
+#
 
 ### Architecture Diagram (simple block diagram is fine; include Flet + data + emerging tech layer)
+(wil change pa this)
+
+![alt text](FINAL/source/diagram.png)
+
 FLET LAYER
 (User Interface/Frontend)
 
@@ -80,6 +86,7 @@ EMERGING TECHNOLOGY LAYER
 
 - 
 
+#
 ### Data Model (ERD or JSON schema overview)
 [Users]
 - user_id 
@@ -112,28 +119,36 @@ EMERGING TECHNOLOGY LAYER
 - date
 - amount
 
+#
 ### Emerging Tech Explanation (why chosen, how integrated, limitations)
 - AI-assisted feature (e.g., text summary, categorization, simple rule-based or lightweight model inference; if using external APIs ensure fallback handling.) - Automatic Product Categorization - automatically categorizes a new product based of the name that will be inputted. (JUST AN INITIAL PLAN)
 
+# 
 ### Testing Summary (how to run, coverage notes)
 
+#
 ### Team Roles & Contribution Matrix
-- Jasmin Francisco: - Product Lead / Vision & Feature Prioritization\
-UI/UX & Accessibility Designer\
-Lead Developer (Flet Architecture)\
+- Jasmin Francisco: - Product Lead, Vision & Feature Prioritization, 
+UI/UX & Accessibility Designer, 
+Lead Developer (Flet Architecture), 
 Documentation & Release Manager
 
-- Jenny Ibarrientos
-- Janice Laceda
+- Jenny Ibarrientos -
+- Janice Laceda -
 
+#
 ### Risk / Constraint Notes & Future Enhancements
 
+
+
+#
 ### Individual Reflection (per member: 150–200 words)
  - Jasmin Francisco
  - Jenny Ibarrientos
  - Janice Laceda
 
 
+#
 ### Setup & Run Instructions (including dependency install and platform targets)
 ```bash
 # Clone the repository
