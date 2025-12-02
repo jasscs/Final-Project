@@ -9,6 +9,7 @@ def main(page: ft.Page): #THE BROWN ONE IN THE TOP
     page.window_maximized = True
     page.window_resizable = True
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.theme_mode = ft.ThemeMode.LIGHT
 
     page.appbar = ft.AppBar(
         title=ft.Text("Coffeestry System", size=15, color=ft.Colors.BROWN_50),
