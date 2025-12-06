@@ -93,67 +93,139 @@ ROLE-BASED FUNCTION BREAKDOWN
 
 #
 
-### Architecture Diagram (simple block diagram is fine; include Flet + data + emerging tech layer)
-(wil change pa this)
+### Architecture Diagram (simple block diagram is fine; include Flet + data + emerging tech layer)  
 
 ![alt text](FINAL/source/diagram.png)
 
-FLET LAYER
+FLET UI LAYER\
 (User Interface/Frontend)
 
-- Login Screen
-- Order Management Interface
-- Product and Price Management
-- on process to add more
+- Login / Sign Up Interface (Customer, Admin, Superadmin)
 
-DATA LAYER
-(database part)
+- Admin Dashboard Interface (Making Orders, Products, Customers)
 
-- Users Table
-- Products Table
-- Orders Table
-- will add more
+- Superadmin Dashboard Interface (Platform Overview, User/Admin Management)
+
+- Sales Report Page (Analytics View)
+
+(Backend / Application Logic)
+
+-  Authentication/Authorization Module (Handles user roles and access)
+
+- Order Processing API (Create, Update, Delete Orders, Generate Receipt)
+
+- Product/Price Management Module (CRUD for products and prices)
+
+- Analytics Engine (Processes data for Superadmin dashboard)
+
+
+
+DATA LAYER\
+(Database)
+
+- Users Table (Stores credentials and roles for Superadmin, Admin, and Customers)
+
+- Products Table (Stores Product Names, Categories, Prices)
+
+- Orders Table (Stores Order Details, History, and Payment Status)
+
+- Customer Loyalty Table (Manages data for loyal customers)
 
 EMERGING TECHNOLOGY LAYER
+- FLET Framework (A modern Python framework enables building
+a cross-platform apps)
 
-- 
+- SHA-256 Password Hashing ( It's a cryptographic hashing to
+secure the password storage)
+
+- PDF Generation with ReportLab ( It's a programmatic digital
+receipts to a PDF)
+
+- SQLite (A lightweight embedded database with structured
+data access patterns)
+
+- SaaS Architecture ( a role based access control that supports a
+multiple businesses in a platform)
+
+- Real-Time Data Visualization (A dynamic analytics dashboard with
+ charts, status distributions for a business)
+
 
 #
 ### Data Model (ERD or JSON schema overview)
 [Users]
-- user_id 
-- username
-- password
-- role
+- PK\
+-id\
+-username\
+-password\
+-role
+
+- FK\
+-business_owner_id\
+-created_at
 
 [Products]
-- product_id
-- product_name
-- category
-- 
+- PK\
+-id\
+-name\
+-category\
+-price
+- FK\
+-business_owner_id
 
 [Orders]
-- order_id
-- user_id
-- order_date
-- total_amount
+- PK\
+-id\
+-customer_name
+
+- FK\
+ -customer_id\
+ -business_owner_id\
+ -order_type\
+ -total\
+ -status\
+ -payment_status\
+ -order_date
 
 [Order_Items]
-- item_id
-- order_id
-- product_Id
-- quantity
-- subtotal
+- PK\
+-id
 
-[Sales]
-- sales_id
-- order_id
-- date
-- amount
+- FK\
+-order_id\
+-productname\
+-category\
+-price\
+-quantity
+
+
+ROLE HIERARCHY
+
+SuperAdmin
+- Can create/manage Business Owners
+- View platform-wide analytics
+- Access all data
+
+Business Owner (can be access by owner or staff)
+- Create/manage own Products
+- Create/Manage Customers
+- Process Orders
+- View own Business Analytics
+
+Customer
+- View owner's Product only
+- Place Orders
+- View own Order History
 
 #
 ### Emerging Tech Explanation (why chosen, how integrated, limitations)
-- AI-assisted feature (e.g., text summary, categorization, simple rule-based or lightweight model inference; if using external APIs ensure fallback handling.) - Automatic Product Categorization - automatically categorizes a new product based of the name that will be inputted. (JUST AN INITIAL PLAN)
+ SHA-256 (Secure Hash Algorithm 256-bit)
+
+- This was chosen for the easy integration in Python since this has no additional dependencies required. This is widely accepted and used for security applications since it has one-way functions and that password cannot be decrypted from the hash but only to verified. This is kind of easy to implement in this system. 
+- It was integrated through creating a hash function, this was applied to all password operations. Before storing, it default the password hashed, on signup a new user password was hashed, when an owner creates account it hashed the customer passsword, when the admin updates the user a password where rehashed and then when an input password were hashed and compared against stored hash.
+- The limitations is that, this does not incorporate with salting, it's a techique where a random data is appended to passwords before hashing since SHA-256 is designed to be computationally fast, which is counterproductive for password security since attackers can leverage modern GPUs to compute bilions of hashes per second during a brute-force attacks. So without the salting, attackers can easily match a precomputed hashes to common passwords and this can only perform one hashing iteration, wherein it is not enough for slowing down the attackers. SHA-256 hashes was typically produce identically when an identical password was made. This kind of works well with data integrity but it is not ideal for securing password storage.
+
+
 
 # 
 ### Testing Summary (how to run, coverage notes)
@@ -183,17 +255,25 @@ Documentation & Release Manager
 #
 ### Setup & Run Instructions (including dependency install and platform targets)
 ```bash
+
+# Prerequisites
+- Python
+- Operating System
+- Git
+
 # Clone the repository
 git clone https://github.com/<jasscs>Final-Project.git
 cd FINAL
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  
+# On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+pip install flet reportlab
 
-# Create .env file .env
-
-# Add your Op
+#Run the Application
+cd FINAL 
+flet run main.py

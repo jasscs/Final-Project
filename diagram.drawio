@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="8_rmk1GitsIkVWYYir44" name="Page-1">
-        <mxGraphModel dx="720" dy="325" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="470" dy="1613" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -10,46 +10,66 @@
                         <mxPoint x="384.9" y="270" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="3" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="180" y="40" width="410" height="180" as="geometry"/>
-                </mxCell>
-                <mxCell id="4" value="ARCHITECTURE DIAGRAM" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="290" y="8" width="180" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="5" value="FLET UI LAYER" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="325" y="50" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="6" value="User Interface / Front End" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="180" y="80" width="160" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="7" value="- Log in&lt;br&gt;- Order Management Interface&lt;br&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;- Product &amp;amp; Price Management UI&lt;/span&gt;&lt;/div&gt;- Sales Report Page" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="190" y="110" width="200" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="8" value="" style="edgeStyle=none;html=1;" parent="1" source="9" edge="1">
+                <mxCell id="16" style="edgeStyle=none;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" target="7">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="385" y="500" as="targetPoint"/>
+                        <mxPoint x="507.5" y="180" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="20" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="3">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="430" y="600" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="3" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="180" y="40" width="500" height="400" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="ARCHITECTURE DIAGRAM" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="360" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="FLET UI LAYER" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="380" y="50" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="6" target="7">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="User Interface / Front End" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="190" y="90" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="&lt;p data-path-to-node=&quot;4,1,2,3&quot;&gt;&lt;b&gt;-&amp;nbsp;Login / Sign Up Interface (Customer, Admin, Superadmin)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,1,2,3&quot;&gt;&lt;b&gt;&lt;span style=&quot;color: rgb(63, 63, 63); background-color: transparent;&quot;&gt;-&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;color: rgb(63, 63, 63); background-color: transparent;&quot;&gt;Admin Dashboard Interface&lt;/span&gt;&lt;span style=&quot;color: rgb(63, 63, 63); background-color: transparent;&quot;&gt; (Making Orders, Products, Customers)&lt;/span&gt;&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,1,2,7&quot;&gt;&lt;b&gt;-Superadmin Dashboard Interface (Platform Overview, User/Admin Management)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,1,2,9&quot;&gt;&lt;b&gt;-Sales Report Page (Analytics View)&lt;/b&gt;&lt;br&gt;&lt;/p&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="120" width="480" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="" style="edgeStyle=none;html=1;" edge="1" parent="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="425" y="810" as="sourcePoint"/>
+                        <mxPoint x="425" y="980" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="9" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="180" y="280" width="410" height="180" as="geometry"/>
+                    <mxGeometry x="180" y="610" width="500" height="240" as="geometry"/>
                 </mxCell>
-                <mxCell id="10" value="DATA LAYER" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="340" y="300" width="90" height="30" as="geometry"/>
+                <mxCell id="10" value="DATA LAYER" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="385" y="626" width="90" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="11" value="(Database)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="210" y="330" width="80" height="30" as="geometry"/>
+                    <mxGeometry x="390" y="641" width="80" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="12" value="- Users Table&lt;br&gt;- Products Table&lt;br&gt;- Orders Table&lt;br&gt;- Sales Records" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="215" y="360" width="110" height="70" as="geometry"/>
+                <mxCell id="12" value="&lt;p data-path-to-node=&quot;4,3,2,3&quot;&gt;&lt;b&gt;- Users Table (Stores credentials and roles for Superadmin, Admin, and Customers)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,3,2,5&quot;&gt;&lt;b&gt;- Products Table (Stores Product Names, Categories, Prices)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,3,2,7&quot;&gt;&lt;b&gt;- Orders Table (Stores Order Details, History, and Payment Status)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,3,2,9&quot;&gt;&lt;b&gt;- Customer Loyalty Table (Manages data for loyal customers)&lt;/b&gt;&lt;/p&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="185" y="680" width="500" height="130" as="geometry"/>
                 </mxCell>
                 <mxCell id="13" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="180" y="510" width="410" height="180" as="geometry"/>
+                    <mxGeometry x="180" y="990" width="500" height="360" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="Emerging Technology Layer" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="300" y="540" width="170" height="30" as="geometry"/>
+                <mxCell id="14" value="EMERGING TECH LAYER" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="340" y="1010" width="170" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="15" value="-&lt;div&gt;-&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="210" y="595" width="30" height="40" as="geometry"/>
+                <mxCell id="17" value="Backend / Application Logic" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" vertex="1" parent="1">
+                    <mxGeometry x="190" y="260" width="170" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="&lt;p data-path-to-node=&quot;4,2,2,3&quot;&gt;&lt;b&gt;-&amp;nbsp; Authentication/Authorization Module (Handles user roles and access)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,2,2,5&quot;&gt;&lt;b&gt;- Order Processing API (Create, Update, Delete Orders, Generate Receipt)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,2,2,7&quot;&gt;&lt;b&gt;- Product/Price Management Module (CRUD for products and prices)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,2,2,9&quot;&gt;&lt;b&gt;- Analytics Engine (Processes data for Superadmin dashboard)&lt;/b&gt;&lt;/p&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="200" y="290" width="440" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="&lt;p data-path-to-node=&quot;4,3,2,3&quot;&gt;&lt;b&gt;- FLET Framework (A modern Python framework enables building &lt;br&gt;a cross-platform apps)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,3,2,3&quot;&gt;&lt;b&gt;- SHA-256 Password Hashing ( It&#39;s a cryptographic hashing to &lt;br&gt;secure the password storage)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,3,2,3&quot;&gt;&lt;b&gt;- PDF Generation with ReportLab ( It&#39;s a programmatic digital &lt;br&gt;receipts to a PDF)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,3,2,3&quot;&gt;&lt;b&gt;- SQLite (A lightweight embedded database with structured &lt;br&gt;data access patterns)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,3,2,3&quot;&gt;&lt;b&gt;- SaaS Architecture ( a role based access control that supports a &lt;br&gt;multiple businesses in a platform)&lt;/b&gt;&lt;/p&gt;&lt;p data-path-to-node=&quot;4,3,2,3&quot;&gt;&lt;b&gt;- Real-Time Data Visualization (A dynamic analytics dashboard with&lt;br&gt;&amp;nbsp;charts, status distributions for a business)&lt;/b&gt;&lt;/p&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="200" y="1050" width="410" height="270" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
