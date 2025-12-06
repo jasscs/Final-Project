@@ -34,27 +34,62 @@ The Coffeestry System is a digital management application designed for coffee an
 
 ### Feature List & Scope Table (what’s in/out)
 This is a list of all of the functions that Coffeestry system have:
-- [/] User Login / Authentication
-- [/] Login Button
-- [/] Logout Button
-- []
-- []
-- [/] Order Management
-- [/] Create/Add Orders
-- [/] Update/Edit Orders
-- [/] Delete Orders
-- [/] View Order History
-- [/] Product Management
-- [/] Add New Products
-- [/] Update Product Details
-- [/] Delete Products
-- [/] Price Management
-- [/] Update Product Prices
-- [/] View Price List
-- [/] Customer Database
-- [] 
-- []
-- []
+
+USER AUTHENTICATION
+
+[/] User Login / Authentication\
+[/] Login Button\
+[/] Logout Button\
+[/] Sign Up (Staff)
+
+USER & ACCESS MANAGEMENT
+
+[/] Manage Users\
+[/] Create/Manage Admin Accounts
+
+PLATFORM OVERVIEW & ANALYTICS
+
+[/] Dashboard (Platform Overview)\
+[/] Platform Analytics
+
+ORDER MANAGEMENT
+
+[/] Create/Add Orders (Order Entry)\
+[/] Update/Edit Orders\
+[/] Delete Orders\
+[/] View Order History\
+[/] Generate Receipt/Order Details
+
+PRODUCT & PRICE MANAGEMENT
+
+[/] Product Management\
+[/] Add New Products\
+[/] Update Product Details\
+[/] Delete Products\
+[/] Price Management\
+[/] Update Product Prices\
+[/] View Price List
+
+CUSTOMER & LOYALTY MANAGEMENT
+
+[/] My Customers (Loyalty Account Creation)\
+[/] Customer Orders (Loyalty Order Management)
+
+ROLE-BASED FUNCTION BREAKDOWN
+
+[/] SUPERADMIN
+
+- Full System Access 
+- Responsible for Platform Analytics, User Management, Admin Account Creation
+
+[/] ADMIN
+- Operational Dashboard
+- Responsible for Order Management, Product/Price Management, Customer Loyalty Management
+
+[/] CUSTOMER
+- External
+- Responsible for Signup, Placing Orders.
+
 
 #
 
