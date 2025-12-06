@@ -69,7 +69,7 @@ def main(page: ft.Page):
         home_content = ft.Column(
             [
                 ft.Container(
-                    content=ft.Image(src="logo.png", width=400, height=300, fit=ft.ImageFit.CONTAIN),
+                    content=ft.Image(src="source/logo.png", width=400, height=300, fit=ft.ImageFit.CONTAIN),
                     alignment=ft.alignment.top_center,
                     margin=ft.margin.only(top=5, bottom=5),
                 ),
@@ -111,7 +111,7 @@ def main(page: ft.Page):
                 ),
                 ft.Container(
                     content=ft.ElevatedButton(
-                        "Exit", on_click=lambda e: page.window_close(),
+                        "Exit", on_click=lambda e: page.window.close(),
                         bgcolor=PRIMARY_LIGHT, color=ACCENT_CREAM, width=280,
                         style=ft.ButtonStyle(
                             shape=ft.RoundedRectangleBorder(radius=25),

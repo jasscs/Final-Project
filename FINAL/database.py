@@ -1,7 +1,18 @@
 import sqlite3
 import os
+import hashlib
 from datetime import datetime, timedelta
 print("Database path:", os.path.abspath("coffeestry.db"))
+
+# ============ PASSWORD HASHING FUNCTIONS ============
+
+def hash_password(password):
+    """Hash a password using SHA-256"""
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+def verify_password(password, hashed_password):
+    """Verify a password against its hash"""
+    return hash_password(password) == hashed_password
 
 def get_connection():
     conn = sqlite3.connect("coffeestry.db")
@@ -83,11 +94,11 @@ def add_default_users():
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Default users including superadmin
+    # Default users including superadmin (passwords are hashed)
     users = [
-        ("superadmin", "superadmin123", "superadmin", None),
-        ("owner", "admin123", "owner", None),
-        ("staff", "staff123", "staff", None)
+        ("superadmin", hash_password("superadmin123"), "superadmin", None),
+        ("owner", hash_password("admin123"), "owner", None),
+        ("staff", hash_password("staff123"), "staff", None)
     ]
 
     for username, password, role, business_owner_id in users:
@@ -216,12 +227,13 @@ def delete_product(product_id):
     conn.close()
 
 def register_user(username, password, role="staff"):
-    """Register a new user in the database"""
+    """Register a new user in the database with hashed password"""
     conn = get_connection()
     cursor = conn.cursor()
     try:
+        hashed_pwd = hash_password(password)
         cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-                       (username, password, role))
+                       (username, hashed_pwd, role))
         conn.commit()
         conn.close()
         return True, "Registration successful!"
@@ -367,12 +379,13 @@ def delete_user(user_id):
     conn.close()
 
 def update_user(user_id, username, password, role):
-    """Update user credentials"""
+    """Update user credentials with hashed password"""
     conn = get_connection()
     cursor = conn.cursor()
     try:
+        hashed_pwd = hash_password(password)
         cursor.execute("UPDATE users SET username=?, password=?, role=? WHERE id=?",
-                       (username, password, role, user_id))
+                       (username, hashed_pwd, role, user_id))
         conn.commit()
         conn.close()
         return True, "User updated successfully!"
@@ -395,12 +408,13 @@ def get_user_by_id(user_id):
 # ============ BUSINESS OWNER FUNCTIONS ============
 
 def create_customer(username, password, business_owner_id):
-    """Create a customer account linked to a business owner"""
+    """Create a customer account linked to a business owner with hashed password"""
     conn = get_connection()
     cursor = conn.cursor()
     try:
+        hashed_pwd = hash_password(password)
         cursor.execute("INSERT INTO users (username, password, role, business_owner_id) VALUES (?, ?, 'customer', ?)",
-                       (username, password, business_owner_id))
+                       (username, hashed_pwd, business_owner_id))
         conn.commit()
         conn.close()
         return True, "Customer created successfully!"
@@ -582,10 +596,11 @@ def get_customer_business_owner(customer_id):
     return result[0] if result else None
 
 def login_user(username, password):
-    """Login a user and return their details"""
+    """Login a user and return their details (verifies hashed password)"""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, username, role, business_owner_id FROM users WHERE username=? AND password=?", (username, password))
+    hashed_pwd = hash_password(password)
+    cursor.execute("SELECT id, username, role, business_owner_id FROM users WHERE username=? AND password=?", (username, hashed_pwd))
     user = cursor.fetchone()
     conn.close()
     return user
