@@ -37,24 +37,21 @@ This is a list of all of the functions that Coffeestry system have:
 - [/] User Login / Authentication
 - [/] Login Button
 - [/] Logout Button
-- [] Order Management
-- [] Create/Add Orders
-- [] Update/Edit Orders
-- [] Delete Orders
-- [] View Order History
+- []
+- []
+- [/] Order Management
+- [/] Create/Add Orders
+- [/] Update/Edit Orders
+- [/] Delete Orders
+- [/] View Order History
 - [/] Product Management
 - [/] Add New Products
 - [/] Update Product Details
 - [/] Delete Products
 - [/] Price Management
 - [/] Update Product Prices
-- [] View Price List
-- [] Customer Database
-- [] Store Customer Information
-- [] View Customer Records
-- [] Reports
-- [] Sales Report
-- [] Inventory/Stock Reports
+- [/] View Price List
+- [/] Customer Database
 - [] 
 - []
 - []
