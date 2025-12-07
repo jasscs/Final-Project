@@ -29,7 +29,7 @@ def create_home_page(page, go_to_login, go_to_about):
             ),
             ft.ElevatedButton(
                 "Sign Up", 
-                on_click=lambda e: go_to_signup(),
+                on_click=lambda e: print("Sign Up button clicked"),  # Replace with actual function when defined
                 bgcolor=ACCENT_WARM, 
                 color=PRIMARY_DARK, 
                 width=280,

@@ -15,12 +15,12 @@ Term: AY 2025–2026 (Finals)
 
 #
 - **Name**: Jenny Ibarrientos
-- **Student ID**: 23100
+- **Student ID**: 231002317
 - **Course**: CCCS 106
 - **Section**: BSCS 3B
 #
 - **Name**: Janice Laceda
-- **Student ID**: 23100
+- **Student ID**: 231004762
 - **Course**: CCCS 106
 - **Section**: BSCS 3B
 
@@ -33,11 +33,11 @@ The Coffeestry System is a digital management application designed for coffee an
 #
 
 ### Feature List & Scope Table (what’s in/out)
-This is a list of all of the functions that Coffeestry system have:
+This is the list of all the functions that Coffeestry system have:
 
 USER AUTHENTICATION
 
-[/] User Login / Authentication\
+[/] User Login/Authentication\
 [/] Login Button\
 [/] Logout Button\
 [/] Sign Up (Staff)
@@ -229,27 +229,52 @@ Customer
 
 # 
 ### Testing Summary (how to run, coverage notes)
+This Coffeestry system was tested through manual functional testing that covers the user authentication across all roles, CRUD operations for the products and users, order process, workflows, payment handling, pdf receipt generations and the isolation of the multi data.
 
 #
-### Team Roles & Contribution Matrix
-- Jasmin Francisco: - Product Lead, Vision & Feature Prioritization, 
-UI/UX & Accessibility Designer, 
-Lead Developer (Flet Architecture), 
-Documentation & Release Manager
+## Team Roles & Contribution Matrix  
+| Contributor | Role / Responsibilities | Contributions / Modules |
+|-------------|------------------------|------------------------|
+| Jasmin Francisco (jasscs) | Product Lead / UI/UX & Accessibility Designer / Project lead/ Data model | Flet UI, main app flow, SQLite schema, Documentation and README |
+| Jenny Ibarrientos (github)|  |  |
+| Janice Laceda (github)|  | |
 
-- Jenny Ibarrientos -
-- Janice Laceda -
+
 
 #
 ### Risk / Constraint Notes & Future Enhancements
+**Risks / Constraints:**  
+- SHA-256 Limitations  
+- No session timeout
+- No rate limiting
+- No Input Sanitization
+- SQLite Single File
+- No Backup System
+- No Data encryption at rest
+- Limited Scability
 
+**Future Enhancements:**  
+- Implement a purpose-built password hashing
+- Session Management
+- Two Factor Authentication
+- An automated backups
+- Data Encryption
+- Enhance more the features, the afunctions in the report and anlytics, some of the integrations and the UI.
 
 
 #
 ### Individual Reflection (per member: 150–200 words)
- - Jasmin Francisco
- - Jenny Ibarrientos
- - Janice Laceda
+- Jasmin Francisco:
+As the project lead for this system, I realized that implementing a database-based application is not easy, especially when you are not skilled in programming. I am not very knowledgeable in coding, which made this project challenging for me, and even our group struggled since we all lacked experience in programming. During the development process, I had to search for references, study how Python and Flet work, and ask for help from friends, classmates, and even AI. Through this project, I gained new knowledge about Python programming and how it can be integrated with Flet to build a complete system. This project taught me the value of effort, patience, sacrifice, and time management, especially with have limited time. Despite the difficulties, this experience helps me to have small improvements in ife as a computer science student.
+
+- Jenny Ibarrientos:
+
+
+ - Janice Laceda:
+Caffeestry System was not an easy project to work on. I was also unable to contribute fully to the project since there are certain aspects of the code and how the system operates that I could not comprehend. At least reading the README.md allowed me to have an understanding of the general purpose of the system, which is to help small coffee and pastry shops with the orders and product management.
+I could not contribute much to finish the tasks, but it was a valuable experience that made me understand the significance of group work and involvement in teamwork. I also got to know that a good documentation, such as the README, can go a long way in covering the system, particularly when one is not understanding the technicalities of it.
+This project made me realize that I have my tasks as a part of a team, and despite all the difficulties, I should be able to admit my limitation and learn in order to be able to play my part in the future projects.
+
 
 
 #
@@ -277,3 +302,6 @@ pip install flet reportlab
 #Run the Application
 cd FINAL 
 flet run main.py
+
+## Acknowledgments  
+- Acknowledgments: Flet framework, SQLite, and open-source inspirations.
