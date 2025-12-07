@@ -52,7 +52,7 @@ def main(page: ft.Page):
     last_save_path = {"path": default_receipts_folder}  # Using dict to allow modification in nested functions
 
     page.appbar = ft.AppBar(
-        title=ft.Text("☕ Coffeestry System", size=18, color=ACCENT_CREAM, weight=ft.FontWeight.W_600),
+        title=ft.Text("Coffeestry System", size=18, color=ACCENT_CREAM, weight=ft.FontWeight.W_600),
         center_title=True,
         bgcolor=PRIMARY_DARK,
         elevation=4,
@@ -1319,7 +1319,7 @@ def main(page: ft.Page):
                             ft.Container(
                                 content=ft.Column([
                                     ft.Text("Thank you for your purchase!", size=14, weight=ft.FontWeight.W_600, color=PRIMARY_DARK),
-                                    ft.Text("Visit us again soon! ☕", size=12, color=TEXT_MID),
+                                    ft.Text("Visit us again soon!", size=12, color=TEXT_MID),
                                 ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=3),
                                 padding=10,
                                 alignment=ft.alignment.center,

@@ -271,11 +271,13 @@ As the project lead for this system, I realized that implementing a database-bas
 
 
  - Janice Laceda:
-Caffeestry System was not an easy project to work on. I was also unable to contribute fully to the project since there are certain aspects of the code and how the system operates that I could not comprehend. At least reading the README.md allowed me to have an understanding of the general purpose of the system, which is to help small coffee and pastry shops with the orders and product management.
+Coffeestry System was not an easy project to work on. I was also unable to contribute fully to the project since there are certain aspects of the code and how the system operates that I could not comprehend. At least reading the README.md allowed me to have an understanding of the general purpose of the system, which is to help small coffee and pastry shops with the orders and product management.
 I could not contribute much to finish the tasks, but it was a valuable experience that made me understand the significance of group work and involvement in teamwork. I also got to know that a good documentation, such as the README, can go a long way in covering the system, particularly when one is not understanding the technicalities of it.
 This project made me realize that I have my tasks as a part of a team, and despite all the difficulties, I should be able to admit my limitation and learn in order to be able to play my part in the future projects.
 
 
+## Acknowledgments  
+- Acknowledgments: Flet framework, SQLite, and open-source inspirations.
 
 #
 ### Setup & Run Instructions (including dependency install and platform targets)
@@ -302,6 +304,3 @@ pip install flet reportlab
 #Run the Application
 cd FINAL 
 flet run main.py
-
-## Acknowledgments  
-- Acknowledgments: Flet framework, SQLite, and open-source inspirations.
