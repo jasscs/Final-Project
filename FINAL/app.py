@@ -27,7 +27,7 @@ def main(page: ft.Page):
 
     # App bar
     page.appbar = ft.AppBar(
-        title=ft.Text("☕ Coffeestry System", size=18, color=ACCENT_CREAM, weight=ft.FontWeight.W_600),
+        title=ft.Text("Coffeestry System", size=18, color=ACCENT_CREAM, weight=ft.FontWeight.W_600),
         center_title=True,
         bgcolor=PRIMARY_DARK,
         elevation=4,

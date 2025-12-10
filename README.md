@@ -236,8 +236,8 @@ This Coffeestry system was tested through manual functional testing that covers 
 | Contributor | Role / Responsibilities | Contributions / Modules |
 |-------------|------------------------|------------------------|
 | Jasmin Francisco (jasscs) | Product Lead / UI/UX & Accessibility Designer / Project lead/ Data model | Flet UI, main app flow, SQLite schema, Documentation and README |
-| Jenny Ibarrientos (github)|  |  |
-| Janice Laceda (github)|  | |
+| Jenny Ibarrientos (github)| Documentation  |README|
+| Janice Laceda (github)| Documentation |README |
 
 
 
@@ -260,6 +260,7 @@ This Coffeestry system was tested through manual functional testing that covers 
 - An automated backups
 - Data Encryption
 - Enhance more the features, the afunctions in the report and anlytics, some of the integrations and the UI.
+- Enhance more the feautures and functions
 
 
 #
@@ -278,6 +279,8 @@ This project made me realize that I have my tasks as a part of a team, and despi
 
 ## Acknowledgments  
 - Acknowledgments: Flet framework, SQLite, and open-source inspirations.
+
+
 
 #
 ### Setup & Run Instructions (including dependency install and platform targets)
@@ -304,3 +307,84 @@ pip install flet reportlab
 #Run the Application
 cd FINAL 
 flet run main.py
+```
+# 
+## SCREENSHOTS AND FUNCTIONS OF COFFEESTRY SYSTEM
+
+1. Welcome Screen / Exit Page 
+- Starting point of the system with quick access options.
+- Verifies if the user wants to close the application 
+![alt text](FINAL/source/welcomescreen.png)
+
+2. Login Page
+- Users enter their credentials to access the system securely.
+![alt text](FINAL/source/loginpage.png)
+
+3. Sign Up Page
+- Used to register a new admin account 
+![alt text](FINAL/source/signuppage.png)
+
+4. About Page
+- Shows a short description of what Coffeestry is all about.
+![alt text](FINAL/source/aboutpage.png)
+ 
+
+SUPER ADMIN UI SCREENS
+1. Dashboard / Logout
+- Overview of system activity and quick access to main controls.
+- Sign out safely from SuperAdmin session.
+![alt text](FINAL/source/superadmin.png)
+
+2. Create Admin
+- Add new admin accounts to manage system operations.
+![alt text](FINAL/source/createadmin.png)
+
+3. Manage Users
+- View, edit, and delete user accounts with ease.
+![alt text](FINAL/source/manageuser.png)
+
+4. Edit User
+- Update user details and roles efficiently.
+![alt text](FINAL/source/edituser.png)
+
+5. Delete User
+- Remove user accounts securely and instantly.
+![alt text](FINAL/source/deleteuser.png)
+
+ADMIN UI SCREENS 
+1. Admin Dashboard 
+- Main control center for all administrative operations.
+![alt text](FINAL/source/admin1.png)
+![alt text](FINAL/source/admin2.png)
+
+2. Products and Prices 
+- Manage items, categories, and pricing in your menu.
+![alt text](FINAL/source/prodprice.png)
+
+3. Order History 
+- Track All completed customer orders.
+![alt text](FINAL/source/orderhistory.png)
+
+4. My Customers 
+- View and manage customer information.
+![alt text](FINAL/source/mycustomer.png)
+
+5. Customer Orders 
+- Process and monitor active orders in real time.
+![alt text](FINAL/source/customerorder.png)
+
+USER/CUSTOMER UI SCREENS 
+1. User Dashboard / Browse Menu
+- User-friendly panel for day to day operations.
+- View all available coffees and pastries.
+![alt text](FINAL/source/customer.png)
+
+3. My Cart
+- Review and manage your orders before checkout.
+![alt text](FINAL/source/mycart.png)
+
+4. Order History 
+- Track all your previous purchases.
+![alt text](FINAL/source/orderhistory_customer.png)
+
+THANK YOU SO MUCH!
