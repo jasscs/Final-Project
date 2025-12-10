@@ -535,7 +535,7 @@ def main(page: ft.Page):
                         ),
                         ft.Container(height=20),
                         ft.Text(
-                            "☕ Ready to serve great coffee!",
+                            "Ready to serve great coffee!",
                             size=14,
                             color=TEXT_LIGHT,
                             italic=True
