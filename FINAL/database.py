@@ -2,7 +2,10 @@ import sqlite3
 import os
 import hashlib
 from datetime import datetime, timedelta
-print("Database path:", os.path.abspath("coffeestry.db"))
+
+# Always resolve DB path relative to this file, not the working directory
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "coffeestry.db")
+print("Database path:", DB_PATH)
 
 # ============ PASSWORD HASHING FUNCTIONS ============
 
@@ -15,7 +18,7 @@ def verify_password(password, hashed_password):
     return hash_password(password) == hashed_password
 
 def get_connection():
-    conn = sqlite3.connect("coffeestry.db")
+    conn = sqlite3.connect(DB_PATH)
     return conn
 
 def create_table():
@@ -201,7 +204,7 @@ def create_orders_table():
 def get_products(business_owner_id=None):
     conn = get_connection()
     cursor = conn.cursor()
-    if business_owner_id:
+    if business_owner_id is not None:
         cursor.execute("SELECT id, name, category, price FROM products WHERE business_owner_id = ?", (business_owner_id,))
     else:
         cursor.execute("SELECT id, name, category, price FROM products")
@@ -219,21 +222,24 @@ def add_product(name, category, price, business_owner_id=None):
     conn.commit()
     conn.close()
 
-def delete_product(product_id):
+def delete_product(product_id, business_owner_id=None):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM products WHERE id=?", (product_id,))
+    if business_owner_id is not None:
+        cursor.execute("DELETE FROM products WHERE id=? AND business_owner_id = ?", (product_id, business_owner_id))
+    else:
+        cursor.execute("DELETE FROM products WHERE id=?", (product_id,))
     conn.commit()
     conn.close()
 
-def register_user(username, password, role="staff"):
+def register_user(username, password, role="staff", business_owner_id=None):
     """Register a new user in the database with hashed password"""
     conn = get_connection()
     cursor = conn.cursor()
     try:
         hashed_pwd = hash_password(password)
-        cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-                       (username, hashed_pwd, role))
+        cursor.execute("INSERT INTO users (username, password, role, business_owner_id) VALUES (?, ?, ?, ?)",
+                       (username, hashed_pwd, role, business_owner_id))
         conn.commit()
         conn.close()
         return True, "Registration successful!"
@@ -253,22 +259,31 @@ def check_username_exists(username):
     conn.close()
     return result is not None
 
-def update_product(product_id, name, category, price):
+def update_product(product_id, name, category, price, business_owner_id=None):
     """Update an existing product"""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("UPDATE products SET name=?, category=?, price=? WHERE id=?",
-                   (name, category, price, product_id))
+    if business_owner_id is not None:
+        cursor.execute("UPDATE products SET name=?, category=?, price=? WHERE id=? AND business_owner_id = ?",
+                       (name, category, price, product_id, business_owner_id))
+    else:
+        cursor.execute("UPDATE products SET name=?, category=?, price=? WHERE id=?",
+                       (name, category, price, product_id))
     conn.commit()
     conn.close()
 
-def save_order(customer_name, order_type, total, items):
+def save_order(customer_name, order_type, total, items, customer_id=None, business_owner_id=None):
     """Save an order with its items"""
     conn = get_connection()
     cursor = conn.cursor()
     
-    cursor.execute("INSERT INTO orders (customer_name, order_type, total) VALUES (?, ?, ?)",
-                   (customer_name, order_type, total))
+    cursor.execute(
+        """
+        INSERT INTO orders (customer_name, customer_id, business_owner_id, order_type, total, status, payment_status)
+        VALUES (?, ?, ?, ?, ?, 'confirmed', 'paid')
+        """,
+        (customer_name, customer_id, business_owner_id, order_type, total)
+    )
     order_id = cursor.lastrowid
     
     for item in items:
@@ -505,11 +520,17 @@ def get_business_sales(business_owner_id):
     conn.close()
     return total
 
-def delete_customer(customer_id):
+def delete_customer(customer_id, business_owner_id=None):
     """Delete a customer"""
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM users WHERE id = ? AND role = 'customer'", (customer_id,))
+    if business_owner_id is not None:
+        cursor.execute(
+            "DELETE FROM users WHERE id = ? AND role = 'customer' AND business_owner_id = ?",
+            (customer_id, business_owner_id),
+        )
+    else:
+        cursor.execute("DELETE FROM users WHERE id = ? AND role = 'customer'", (customer_id,))
     conn.commit()
     conn.close()
 
@@ -523,6 +544,97 @@ def get_products_for_customer(business_owner_id):
     products = cursor.fetchall()
     conn.close()
     return products
+
+def seed_default_products_for_owner(owner_id):
+    """Seed a comprehensive default coffee-shop product catalog for an owner (skips if products already exist)"""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM products WHERE business_owner_id = ?", (owner_id,))
+    if cursor.fetchone()[0] > 0:
+        conn.close()
+        return False, "Products already exist for this account."
+
+    default_products = [
+        # Coffee
+        ("Espresso", "Coffee", 90.00),
+        ("Americano", "Coffee", 110.00),
+        ("Cappuccino", "Coffee", 150.00),
+        ("Latte", "Coffee", 160.00),
+        ("Mocha", "Coffee", 170.00),
+        ("Flat White", "Coffee", 155.00),
+        ("Macchiato", "Coffee", 145.00),
+        ("Cold Brew", "Coffee", 175.00),
+        ("Iced Latte", "Coffee", 165.00),
+        ("Cortado", "Coffee", 140.00),
+        # Tea
+        ("Green Tea", "Tea", 85.00),
+        ("Black Tea", "Tea", 80.00),
+        ("Matcha Latte", "Tea", 160.00),
+        ("Chai Latte", "Tea", 150.00),
+        ("Earl Grey", "Tea", 90.00),
+        # Cold Drinks
+        ("Iced Chocolate", "Cold Drinks", 140.00),
+        ("Lemonade", "Cold Drinks", 100.00),
+        ("Iced Tea", "Cold Drinks", 90.00),
+        ("Fruit Punch", "Cold Drinks", 110.00),
+        ("Sparkling Water", "Cold Drinks", 70.00),
+        # Smoothies
+        ("Mango Smoothie", "Smoothies", 130.00),
+        ("Berry Blast Smoothie", "Smoothies", 145.00),
+        ("Avocado Smoothie", "Smoothies", 155.00),
+        ("Banana Smoothie", "Smoothies", 125.00),
+        # Pastry
+        ("Croissant", "Pastry", 85.00),
+        ("Blueberry Muffin", "Pastry", 80.00),
+        ("Cinnamon Roll", "Pastry", 90.00),
+        ("Chocolate Croissant", "Pastry", 95.00),
+        ("Danish Pastry", "Pastry", 100.00),
+        # Sandwiches
+        ("Club Sandwich", "Sandwiches", 180.00),
+        ("BLT Sandwich", "Sandwiches", 160.00),
+        ("Tuna Melt", "Sandwiches", 170.00),
+        ("Veggie Wrap", "Sandwiches", 150.00),
+        ("Grilled Cheese", "Sandwiches", 140.00),
+        # Snacks
+        ("Chips", "Snacks", 60.00),
+        ("Cookies", "Snacks", 50.00),
+        ("Granola Bar", "Snacks", 70.00),
+        ("Banana Bread", "Snacks", 85.00),
+        ("Mixed Nuts", "Snacks", 95.00),
+        # Meals
+        ("Pasta Carbonara", "Meals", 220.00),
+        ("Garden Salad Bowl", "Meals", 195.00),
+        ("Rice Tapa", "Meals", 185.00),
+        ("Loaded Fries", "Meals", 175.00),
+        ("Chicken Sandwich Meal", "Meals", 240.00),
+        # Breakfast
+        ("Pancakes", "Breakfast", 160.00),
+        ("French Toast", "Breakfast", 155.00),
+        ("Eggs Benedict", "Breakfast", 210.00),
+        ("Avocado Toast", "Breakfast", 180.00),
+        ("Full Breakfast Set", "Breakfast", 260.00),
+        # Desserts
+        ("Cheesecake", "Desserts", 150.00),
+        ("Tiramisu", "Desserts", 165.00),
+        ("Brownies", "Desserts", 100.00),
+        ("Ice Cream", "Desserts", 90.00),
+        ("Macarons (3 pcs)", "Desserts", 130.00),
+        # Specialty
+        ("Ube Latte", "Specialty", 180.00),
+        ("Salted Caramel Frap", "Specialty", 185.00),
+        ("Pandan Latte", "Specialty", 175.00),
+        ("Strawberry Matcha", "Specialty", 180.00),
+        ("Taro Milk Tea", "Specialty", 165.00),
+    ]
+
+    for name, category, price in default_products:
+        cursor.execute(
+            "INSERT INTO products (name, category, price, business_owner_id) VALUES (?, ?, ?, ?)",
+            (name, category, price, owner_id),
+        )
+    conn.commit()
+    conn.close()
+    return True, f"{len(default_products)} default products added successfully!"
 
 def get_best_sellers(business_owner_id=None, limit=3):
     """Get top selling products"""

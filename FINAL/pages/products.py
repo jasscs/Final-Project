@@ -2,6 +2,28 @@ import flet as ft
 from config import *
 from database_new import get_all_products, add_product, update_product, delete_product
 
+# Product categories
+PRODUCT_CATEGORIES = [
+    "Coffee",
+    "Pastry", 
+    "Beverages",
+    "Snacks",
+    "Meals",
+    "Desserts",
+    "Specialty",
+]
+
+# Category colors for badges
+CATEGORY_COLORS = {
+    "Coffee": PRIMARY_LIGHT,
+    "Pastry": ACCENT_GOLD,
+    "Beverages": "#64B5F6",  # Blue
+    "Snacks": "#FFB74D",     # Orange
+    "Meals": "#81C784",      # Green
+    "Desserts": "#F48FB1",   # Pink
+    "Specialty": "#9575CD",  # Purple
+}
+
 def create_products_view(page, main_content):
     """Create the Product Management view"""
     
@@ -13,6 +35,7 @@ def create_products_view(page, main_content):
         
         table_rows = []
         for p in products:
+            category_color = CATEGORY_COLORS.get(p["category"], PRIMARY_LIGHT)
             table_rows.append(
                 ft.DataRow(
                     cells=[
@@ -20,7 +43,7 @@ def create_products_view(page, main_content):
                         ft.DataCell(
                             ft.Container(
                                 content=ft.Text(p["category"], size=11, color=ACCENT_CREAM),
-                                bgcolor=PRIMARY_LIGHT if p["category"] == "Coffee" else ACCENT_GOLD,
+                                bgcolor=category_color,
                                 padding=ft.padding.symmetric(horizontal=8, vertical=2),
                                 border_radius=10,
                             )
@@ -77,7 +100,28 @@ def create_products_view(page, main_content):
                         spacing=15,
                     ),
                     ft.Container(height=10),
+                    # Show empty state or product table
                     ft.Container(
+                        content=ft.Column(
+                            [
+                                ft.Icon(ft.Icons.INVENTORY_2_ROUNDED, size=60, color=TEXT_LIGHT),
+                                ft.Container(height=10),
+                                ft.Text("No products yet", size=18, color=TEXT_MID, weight=ft.FontWeight.W_500),
+                                ft.Text("Click 'Add Product' to create your first product", size=14, color=TEXT_LIGHT),
+                            ],
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=5,
+                        ),
+                        padding=50,
+                        bgcolor=BG_CARD,
+                        border_radius=15,
+                        alignment=ft.alignment.center,
+                        shadow=ft.BoxShadow(
+                            color=ft.Colors.with_opacity(0.08, ft.Colors.BLACK),
+                            blur_radius=15,
+                            offset=ft.Offset(0, 4)
+                        ),
+                    ) if not table_rows else ft.Container(
                         content=ft.DataTable(
                             columns=[
                                 ft.DataColumn(ft.Text("Product Name", weight=ft.FontWeight.W_600, color=PRIMARY_DARK)),
@@ -143,10 +187,7 @@ def create_products_view(page, main_content):
             label_style=ft.TextStyle(color=TEXT_MID),
             border_radius=10,
             value=product["category"] if product else None,
-            options=[
-                ft.dropdown.Option("Coffee"),
-                ft.dropdown.Option("Pastry"),
-            ]
+            options=[ft.dropdown.Option(cat) for cat in PRODUCT_CATEGORIES]
         )
         
         price_field = ft.TextField(
@@ -190,14 +231,48 @@ def create_products_view(page, main_content):
             
             if product:
                 # Update existing product
-                update_product(product["id"], name, category, price)
-                page.snack_bar = ft.SnackBar(
-                    ft.Text(f"Product '{name}' updated successfully!", color=ACCENT_CREAM),
-                    bgcolor=SUCCESS,
-                )
+                try:
+                    update_product(product["id"], name, category, price)
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.CHECK_CIRCLE, color=ACCENT_CREAM, size=20),
+                            ft.Text(f"Product '{name}' updated successfully!", color=ACCENT_CREAM),
+                        ], spacing=10),
+                        bgcolor=SUCCESS,
+                    )
+                except Exception as ex:
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.ERROR, color=ACCENT_CREAM, size=20),
+                            ft.Text(f"Error updating product: {str(ex)}", color=ACCENT_CREAM),
+                        ], spacing=10),
+                        bgcolor=ERROR,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
+                    return
             else:
                 # Add new product
-                add_product(name, category, price)
+                try:
+                    add_product(name, category, price)
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.CHECK_CIRCLE, color=ACCENT_CREAM, size=20),
+                            ft.Text(f"Product '{name}' added successfully!", color=ACCENT_CREAM),
+                        ], spacing=10),
+                        bgcolor=SUCCESS,
+                    )
+                except Exception as ex:
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.ERROR, color=ACCENT_CREAM, size=20),
+                            ft.Text(f"Error adding product: {str(ex)}", color=ACCENT_CREAM),
+                        ], spacing=10),
+                        bgcolor=ERROR,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
+                    return
                 page.snack_bar = ft.SnackBar(
                     ft.Text(f"Product '{name}' added successfully!", color=ACCENT_CREAM),
                     bgcolor=SUCCESS,

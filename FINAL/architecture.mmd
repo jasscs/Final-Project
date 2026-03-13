@@ -1,0 +1,79 @@
+graph TB
+    subgraph "Presentation Layer"
+        UI[("Flet UI Framework<br/>(Flutter-based Python)")]
+        
+        subgraph "Pages"
+            HOME[Home Page]
+            AUTH[Auth Pages<br/>Login/Signup]
+            DASH[Dashboard]
+            ORDERS[Orders View]
+            PRODUCTS[Products View]
+        end
+    end
+    
+    subgraph "Application Layer"
+        MAIN["main.py<br/>(Entry Point)"]
+        CONFIG["config.py<br/>(Theme/Constants)"]
+        PROD["prod.py<br/>(Product Logic)"]
+        
+        subgraph "Page Modules"
+            P_AUTH["pages/auth.py"]
+            P_DASH["pages/dashboard.py"]
+            P_HOME["pages/home.py"]
+            P_ORDERS["pages/orders.py"]
+            P_PRODUCTS["pages/products.py"]
+        end
+    end
+    
+    subgraph "Data Access Layer"
+        DB_MODULE["database.py<br/>(CRUD Operations)"]
+        DB_NEW["database_new.py<br/>(Auth Functions)"]
+    end
+    
+    subgraph "External Libraries"
+        REPORTLAB["ReportLab<br/>(PDF Generation)"]
+    end
+    
+    subgraph "Storage Layer"
+        SQLITE[("SQLite Database<br/>coffeestry.db")]
+        RECEIPTS["receipts/<br/>(PDF Files)"]
+        ASSETS["assets/<br/>(Images)"]
+    end
+    
+    UI --> HOME
+    UI --> AUTH
+    UI --> DASH
+    
+    MAIN --> CONFIG
+    MAIN --> DB_MODULE
+    MAIN --> PROD
+    
+    HOME --> P_HOME
+    AUTH --> P_AUTH
+    DASH --> P_DASH
+    DASH --> ORDERS
+    DASH --> PRODUCTS
+    ORDERS --> P_ORDERS
+    PRODUCTS --> P_PRODUCTS
+    
+    P_AUTH --> DB_NEW
+    P_ORDERS --> DB_MODULE
+    P_PRODUCTS --> DB_MODULE
+    
+    DB_MODULE --> SQLITE
+    DB_NEW --> SQLITE
+    
+    P_ORDERS --> REPORTLAB
+    REPORTLAB --> RECEIPTS
+    
+    UI --> ASSETS
+    
+    classDef uiLayer fill:#5D4037,stroke:#2C1810,color:#F5E6D3
+    classDef appLayer fill:#8D6E63,stroke:#5D4037,color:#FFF8F0
+    classDef dataLayer fill:#D4A574,stroke:#8D6E63,color:#1A1110
+    classDef storageLayer fill:#C9A86C,stroke:#8D6E63,color:#1A1110
+    
+    class UI,HOME,AUTH,DASH,ORDERS,PRODUCTS uiLayer
+    class MAIN,CONFIG,PROD,P_AUTH,P_DASH,P_HOME,P_ORDERS,P_PRODUCTS appLayer
+    class DB_MODULE,DB_NEW,REPORTLAB dataLayer
+    class SQLITE,RECEIPTS,ASSETS storageLayer

@@ -8,7 +8,7 @@ from database import (get_connection, add_product, get_products, delete_product,
                       get_products_for_customer, get_best_sellers, place_customer_order, get_customer_orders,
                       get_customer_business_owner, login_user, get_orders_by_date, get_top_business_owners,
                       get_order_status_distribution, get_monthly_revenue, get_total_orders, get_total_products,
-                      get_top_selling_products)
+                      get_top_selling_products, seed_default_products_for_owner)
 from prod import products
 from flet import TextField, ElevatedButton, Text, Row, Column 
 from datetime import datetime
@@ -20,6 +20,52 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
+
+# ============ TOAST NOTIFICATION HELPER ============
+def show_toast(page, message, toast_type="info", duration=3000):
+    """Show a user-friendly toast notification
+    toast_type: 'success', 'error', 'warning', 'info'
+    """
+    colors = {
+        "success": ("#4CAF50", "#F5E6D3"),  # Green
+        "error": ("#E57373", "#F5E6D3"),    # Red
+        "warning": ("#FFA726", "#1A1110"),  # Orange
+        "info": ("#5D4037", "#F5E6D3"),     # Brown
+    }
+    icons = {
+        "success": ft.Icons.CHECK_CIRCLE,
+        "error": ft.Icons.ERROR,
+        "warning": ft.Icons.WARNING,
+        "info": ft.Icons.INFO,
+    }
+    bg_color, text_color = colors.get(toast_type, colors["info"])
+    icon = icons.get(toast_type, icons["info"])
+    
+    page.snack_bar = ft.SnackBar(
+        content=ft.Row([
+            ft.Icon(icon, color=text_color, size=20),
+            ft.Text(message, color=text_color, weight=ft.FontWeight.W_500),
+        ], spacing=10),
+        bgcolor=bg_color,
+        duration=duration,
+    )
+    page.snack_bar.open = True
+    page.update()
+
+# ============ PRODUCT CATEGORIES ============
+PRODUCT_CATEGORIES = [
+    "Coffee",
+    "Tea",
+    "Cold Drinks",
+    "Smoothies",
+    "Pastry",
+    "Sandwiches",
+    "Snacks",
+    "Meals",
+    "Breakfast",
+    "Desserts",
+    "Specialty",
+]
 
 # Color Palette - Modern Coffee Shop Theme
 PRIMARY_DARK = "#2C1810"      # Dark espresso brown
@@ -212,10 +258,11 @@ def main(page: ft.Page):
                 if role == "superadmin":
                     superadmin_dashboard()
                 elif role == "owner":
-                    layout4(user_id)
+                    layout4(user_id, user_id)
                 elif role == "staff":
                     # Show welcome page for staff
-                    welcome_page(username, role, user_id)
+                    owner_scope_id = business_owner_id if business_owner_id else user_id
+                    welcome_page(username, role, user_id, owner_scope_id)
                 elif role == "customer":
                     customer_portal(user_id, username, business_owner_id)
             else:
@@ -312,10 +359,18 @@ def main(page: ft.Page):
     def signup_page():
         page.clean()
 
+        owners = [u for u in get_all_business_owners() if str(u[3]).lower() == "owner"]
+
         def signup_clicked(e):
             username = (username_field.value or "").strip()
             password = password_field.value or ""
             confirm_password = confirm_password_field.value or ""
+
+            if not owners:
+                message.value = "No owner account available yet. Ask superadmin to create an owner first."
+                message.color = ERROR
+                page.update()
+                return
 
             # Validation
             if not username or not password or not confirm_password:
@@ -348,8 +403,14 @@ def main(page: ft.Page):
                 page.update()
                 return
 
+            if not owner_assignment.value:
+                message.value = "Please select a business owner/client!"
+                message.color = ERROR
+                page.update()
+                return
+
             # Register user
-            success, msg = register_user(username, password, "staff")
+            success, msg = register_user(username, password, "staff", int(owner_assignment.value))
             
             if success:
                 page.snack_bar = ft.SnackBar(
@@ -403,6 +464,18 @@ def main(page: ft.Page):
             prefix_icon=ft.Icons.LOCK_OUTLINE,
             on_submit=signup_clicked
         )
+
+        owner_assignment = ft.Dropdown(
+            label="Business Owner / Client",
+            width=320,
+            color=TEXT_DARK,
+            border_color=PRIMARY_LIGHT,
+            focused_border_color=PRIMARY_MID,
+            label_style=ft.TextStyle(color=TEXT_MID),
+            border_radius=12,
+            prefix_icon=ft.Icons.BUSINESS,
+            options=[ft.dropdown.Option(str(owner[0]), owner[1]) for owner in owners],
+        )
         
         message = ft.Text(value="", color=ERROR, size=14)
 
@@ -420,6 +493,14 @@ def main(page: ft.Page):
                                     username_field,
                                     password_field,
                                     confirm_password_field,
+                                    owner_assignment,
+                                    ft.Text(
+                                        "Select the client/business owner this staff account belongs to.",
+                                        size=12,
+                                        color=TEXT_LIGHT,
+                                        text_align=ft.TextAlign.CENTER,
+                                        width=320,
+                                    ),
                                     ft.Container(height=10),
                                     ft.ElevatedButton(
                                         "Sign Up", 
@@ -479,11 +560,12 @@ def main(page: ft.Page):
         )
 
     # WELCOME PAGE FOR STAFF
-    def welcome_page(username, role, user_id):
+    def welcome_page(username, role, user_id, owner_scope_id=None):
         page.clean()
         
         def continue_to_dashboard(e):
-            layout4(user_id)  # Go to the main dashboard
+            effective_owner_id = owner_scope_id if owner_scope_id else user_id
+            layout4(user_id, effective_owner_id)  # Go to the main dashboard
         
         page.add(
             ft.Container(
@@ -536,6 +618,7 @@ def main(page: ft.Page):
                         ft.Container(height=20),
                         ft.Text(
                             "Ready to serve great coffee!",
+
                             size=14,
                             color=TEXT_LIGHT,
                             italic=True
@@ -560,15 +643,17 @@ def main(page: ft.Page):
         )
 
 # OWNER DASHBOARD
-    def layout4(current_user_id=None):
+    def layout4(current_user_id=None, business_owner_scope_id=None):
         page.clean()
         main_content = ft.Container(expand=True, bgcolor=BG_LIGHT)
 
+        effective_business_owner_id = business_owner_scope_id if business_owner_scope_id else current_user_id
+
 # DASHBOARD PAGE (Making Orders - with Order Details panel)
         def layout5():
-            # Load products from database
+            # Load products from database (all products shared across staff)
             def load_dashboard_products():
-                db_products = get_products(current_user_id)  # Returns list of tuples (id, name, category, price)
+                db_products = get_products(effective_business_owner_id)
                 return [{"id": p[0], "name": p[1], "category": p[2], "price": p[3]} for p in db_products]
             
             dashboard_products = load_dashboard_products()
@@ -629,6 +714,19 @@ def main(page: ft.Page):
             order_confirmed = [False]
             confirmed_order_items = []
             
+            # Order Status Indicator (initially hidden)
+            order_status_indicator = ft.Container(
+                content=ft.Row([
+                    ft.Icon(ft.Icons.CHECK_CIRCLE, size=20, color=ACCENT_CREAM),
+                    ft.Text("Order Confirmed!", size=14, weight=ft.FontWeight.W_600, color=ACCENT_CREAM),
+                ], spacing=8, alignment=ft.MainAxisAlignment.CENTER),
+                padding=ft.padding.symmetric(horizontal=15, vertical=10),
+                bgcolor=SUCCESS,
+                border_radius=10,
+                visible=False,
+                animate_opacity=ft.Animation(300, ft.AnimationCurve.EASE_IN_OUT),
+            )
+            
             # Cart Table
             cart_table = ft.DataTable(
                 columns=[
@@ -679,14 +777,31 @@ def main(page: ft.Page):
                 page.update()
             
             def confirm_order(e):
+                # Validate cart is not empty
                 if not cart_items:
                     page.snack_bar = ft.SnackBar(
-                        ft.Text("Cart is empty! Add items first.", color=ACCENT_CREAM),
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.SHOPPING_CART_OUTLINED, color=ACCENT_CREAM, size=20),
+                            ft.Text("Your cart is empty! Please add items before confirming.", color=ACCENT_CREAM),
+                        ], spacing=10),
                         bgcolor=ERROR,
                     )
                     page.snack_bar.open = True
                     page.update()
                     return
+                
+                # Validate customer name (warn if empty but allow as walk-in)
+                if not customer_name_field.value or not customer_name_field.value.strip():
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.INFO_OUTLINE, color=ACCENT_CREAM, size=20),
+                            ft.Text("No customer name entered - proceeding as 'Walk-in Customer'", color=ACCENT_CREAM),
+                        ], spacing=10),
+                        bgcolor=PRIMARY_MID,
+                        duration=2000,
+                    )
+                    page.snack_bar.open = True
+                    page.update()
                 
                 # Update customer info display
                 customer_name = customer_name_field.value if customer_name_field.value else "Walk-in Customer"
@@ -722,6 +837,9 @@ def main(page: ft.Page):
                 total_text.value = f"₱ {total:.2f}"
                 order_confirmed[0] = True
                 
+                # Show the order status indicator
+                order_status_indicator.visible = True
+                
                 # Show success message
                 page.snack_bar = ft.SnackBar(
                     ft.Text(f"Order confirmed! Total: ₱{total:.2f}", color=ACCENT_CREAM),
@@ -743,7 +861,10 @@ def main(page: ft.Page):
             def proceed_to_payment(e):
                 if not order_summary_column.controls:
                     page.snack_bar = ft.SnackBar(
-                        ft.Text("Please confirm your order first!", color=ACCENT_CREAM),
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.INFO_OUTLINE, color=ACCENT_CREAM, size=20),
+                            ft.Text("Please confirm your order first by clicking 'Confirm Order'!", color=ACCENT_CREAM),
+                        ], spacing=10),
                         bgcolor=ERROR,
                     )
                     page.snack_bar.open = True
@@ -752,7 +873,10 @@ def main(page: ft.Page):
                 
                 if not confirmed_order_items:
                     page.snack_bar = ft.SnackBar(
-                        ft.Text("No items to process!", color=ACCENT_CREAM),
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.WARNING_AMBER, color=ACCENT_CREAM, size=20),
+                            ft.Text("No items to process! Please add items to cart.", color=ACCENT_CREAM),
+                        ], spacing=10),
                         bgcolor=ERROR,
                     )
                     page.snack_bar.open = True
@@ -861,7 +985,14 @@ def main(page: ft.Page):
                         return
                     
                     # Save order to database
-                    order_id = save_order(customer_name, order_type, total, confirmed_order_items)
+                    order_id = save_order(
+                        customer_name,
+                        order_type,
+                        total,
+                        confirmed_order_items,
+                        customer_id=current_user_id,
+                        business_owner_id=effective_business_owner_id,
+                    )
                     
                     # Close payment dialog
                     page.close(payment_dialog)
@@ -880,6 +1011,8 @@ def main(page: ft.Page):
                     order_type_display.value = "Dine in"
                     order_type_dropdown.value = "Dine in"
                     cart_total[0] = 0
+                    order_status_indicator.visible = False  # Hide the status indicator
+                    order_confirmed[0] = False
                     page.update()
                 
                 # Build items preview for payment dialog
@@ -1546,11 +1679,7 @@ def main(page: ft.Page):
                 bgcolor=BG_CARD,
                 color=TEXT_DARK,
                 value="All",
-                options=[
-                    ft.dropdown.Option("All"),
-                    ft.dropdown.Option("Coffee"),
-                    ft.dropdown.Option("Pastry"),
-                ],
+                options=[ft.dropdown.Option("All")] + [ft.dropdown.Option(cat) for cat in PRODUCT_CATEGORIES],
                 on_change=filter_products,
             )
 
@@ -1693,6 +1822,9 @@ def main(page: ft.Page):
                         ),
                         ft.Divider(height=15, color=ACCENT_CREAM, thickness=2),
                         
+                        # Order Status Indicator
+                        order_status_indicator,
+                        
                         # Customer Info Display
                         ft.Container(
                             content=ft.Column([
@@ -1797,9 +1929,9 @@ def main(page: ft.Page):
             
             selected_product = [None]  # Use list for mutability
        
-            # Load products from database for this business owner
+            # Load products from database (all products shared across staff)
             def load_products_from_db():
-                db_products = get_products(current_user_id)  # Returns list of tuples (id, name, category, price)
+                db_products = get_products(effective_business_owner_id)
                 return [{"id": p[0], "name": p[1], "category": p[2], "price": p[3]} for p in db_products]
             
             products_list = load_products_from_db()
@@ -1885,6 +2017,18 @@ def main(page: ft.Page):
                                     search_field,
                                     ft.Container(expand=True),
                                     ft.ElevatedButton(
+                                        "Seed Default Products",
+                                        icon=ft.Icons.AUTO_AWESOME,
+                                        bgcolor=ACCENT_GOLD,
+                                        color=PRIMARY_DARK,
+                                        style=ft.ButtonStyle(
+                                            shape=ft.RoundedRectangleBorder(radius=10),
+                                            elevation=2,
+                                        ),
+                                        on_click=seed_products_clicked,
+                                        tooltip="Instantly fills your catalog with 60 default products",
+                                    ),
+                                    ft.ElevatedButton(
                                         "Add Product",
                                         icon=ft.Icons.ADD_CIRCLE,
                                         bgcolor=PRIMARY_MID,
@@ -1938,6 +2082,24 @@ def main(page: ft.Page):
                     expand=True,
                 )
                                           
+            # SEED DEFAULT PRODUCTS
+            def seed_products_clicked(e):
+                ok, msg = seed_default_products_for_owner(effective_business_owner_id)
+                bgcolor = SUCCESS if ok else ERROR
+                page.snack_bar = ft.SnackBar(
+                    content=ft.Row([
+                        ft.Icon(ft.Icons.CHECK_CIRCLE if ok else ft.Icons.ERROR, color=ACCENT_CREAM),
+                        ft.Text(msg, color=ACCENT_CREAM),
+                    ], spacing=10),
+                    bgcolor=bgcolor,
+                )
+                page.snack_bar.open = True
+                if ok:
+                    nonlocal products_list
+                    products_list = load_products_from_db()
+                    main_content.content = layout8()
+                page.update()
+
             # ICON FOR ADD PRODUCT
             def open_add(e):
                 selected_product[0] = None
@@ -1952,7 +2114,7 @@ def main(page: ft.Page):
                 
             # Deleting product                
             def delete_prod(product):
-                delete_product(product["id"])  # Delete from database
+                delete_product(product["id"], effective_business_owner_id)
                 page.snack_bar = ft.SnackBar(
                     ft.Text(f"Product '{product['name']}' deleted!", color=ACCENT_CREAM),
                     bgcolor=ERROR,
@@ -1985,15 +2147,15 @@ def main(page: ft.Page):
                     return
                 
                 if selected_product[0] is None:
-                    # Add new product to database for this business owner
-                    add_product(name, category, price, current_user_id)
+                    # Add new product to database (shared across all staff)
+                    add_product(name, category, price, effective_business_owner_id)
                     page.snack_bar = ft.SnackBar(
                         ft.Text(f"Product '{name}' added successfully!", color=ACCENT_CREAM),
                         bgcolor=SUCCESS,
                     )
                 else:
                     # Update existing product in database
-                    update_product(selected_product[0]["id"], name, category, price)
+                    update_product(selected_product[0]["id"], name, category, price, effective_business_owner_id)
                     page.snack_bar = ft.SnackBar(
                         ft.Text(f"Product '{name}' updated successfully!", color=ACCENT_CREAM),
                         bgcolor=SUCCESS,
@@ -2021,10 +2183,7 @@ def main(page: ft.Page):
                     label_style=ft.TextStyle(color=TEXT_MID),
                     border_radius=10,
                     value=prod["category"] if prod else None,
-                    options=[
-                        ft.dropdown.Option("Coffee"),
-                        ft.dropdown.Option("Pastry"),
-                    ]
+                    options=[ft.dropdown.Option(cat) for cat in PRODUCT_CATEGORIES]
                 )
                 price_field = ft.TextField(
                     label="Price (₱)", width=350, color=TEXT_DARK,
@@ -2770,7 +2929,7 @@ def main(page: ft.Page):
                                         
         # MY CUSTOMERS PAGE - Business Owner can create and manage customers
         def layout_customers():
-            customers = get_customers_for_business(current_user_id) if current_user_id else []
+            customers = get_customers_for_business(effective_business_owner_id) if effective_business_owner_id else []
             
             # Create customer form fields
             new_customer_username = ft.TextField(
@@ -2794,12 +2953,15 @@ def main(page: ft.Page):
             
             def create_customer_clicked(e):
                 if not new_customer_username.value or not new_customer_password.value:
-                    page.snack_bar = ft.SnackBar(ft.Text("Please fill in all fields", color=ACCENT_CREAM), bgcolor=ERROR)
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Row([ft.Icon(ft.Icons.ERROR, color=ACCENT_CREAM), ft.Text("Please fill in all fields", color=ACCENT_CREAM)], spacing=10),
+                        bgcolor=ERROR
+                    )
                     page.snack_bar.open = True
                     page.update()
                     return
                 
-                success, message = create_customer(new_customer_username.value, new_customer_password.value, current_user_id)
+                success, message = create_customer(new_customer_username.value, new_customer_password.value, effective_business_owner_id)
                 if success:
                     page.snack_bar = ft.SnackBar(
                         content=ft.Row([ft.Icon(ft.Icons.CHECK_CIRCLE, color=ACCENT_CREAM), ft.Text(message, color=ACCENT_CREAM)], spacing=10),
@@ -2809,13 +2971,16 @@ def main(page: ft.Page):
                     new_customer_password.value = ""
                     layout_customers()  # Refresh
                 else:
-                    page.snack_bar = ft.SnackBar(ft.Text(message, color=ACCENT_CREAM), bgcolor=ERROR)
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Row([ft.Icon(ft.Icons.ERROR, color=ACCENT_CREAM), ft.Text(message, color=ACCENT_CREAM)], spacing=10),
+                        bgcolor=ERROR
+                    )
                 page.snack_bar.open = True
                 page.update()
             
             def delete_customer_clicked(customer_id):
                 def confirm_delete(e):
-                    delete_customer(customer_id)
+                    delete_customer(customer_id, effective_business_owner_id)
                     page.close(delete_dialog)
                     page.snack_bar = ft.SnackBar(
                         content=ft.Row([ft.Icon(ft.Icons.CHECK_CIRCLE, color=ACCENT_CREAM), ft.Text("Customer deleted!", color=ACCENT_CREAM)], spacing=10),
@@ -2949,8 +3114,8 @@ def main(page: ft.Page):
         
         # CUSTOMER ORDERS PAGE - Business Owner can view and manage customer orders
         def layout_customer_orders():
-            orders = get_orders_for_business(current_user_id) if current_user_id else []
-            pending_orders = get_pending_orders_for_business(current_user_id) if current_user_id else []
+            orders = get_orders_for_business(effective_business_owner_id) if effective_business_owner_id else []
+            pending_orders = get_pending_orders_for_business(effective_business_owner_id) if effective_business_owner_id else []
             
             def confirm_order_clicked(order_id):
                 confirm_order(order_id)
@@ -2962,13 +3127,89 @@ def main(page: ft.Page):
                 layout_customer_orders()  # Refresh
             
             def mark_paid_clicked(order_id):
-                mark_order_paid(order_id)
-                page.snack_bar = ft.SnackBar(
-                    content=ft.Row([ft.Icon(ft.Icons.PAYMENT, color=ACCENT_CREAM), ft.Text("Payment confirmed!", color=ACCENT_CREAM)], spacing=10),
-                    bgcolor=SUCCESS
+                # Find the order to get payment details
+                order_info = None
+                for order in orders:
+                    if order[0] == order_id:
+                        order_info = order
+                        break
+                
+                if not order_info:
+                    show_toast(page, "Order not found!", "error")
+                    return
+                
+                ord_total = order_info[3]
+                cust_name = order_info[7] or order_info[1] or "Walk-in"
+                
+                # Payment verification dialog
+                def confirm_payment(e):
+                    mark_order_paid(order_id)
+                    page.close(payment_dialog)
+                    page.snack_bar = ft.SnackBar(
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.VERIFIED, color=ACCENT_CREAM, size=24),
+                            ft.Column([
+                                ft.Text("Payment Verified!", color=ACCENT_CREAM, weight=ft.FontWeight.W_600),
+                                ft.Text(f"Order #{order_id} - ₱{ord_total:.2f}", color=ACCENT_CREAM, size=12),
+                            ], spacing=2),
+                        ], spacing=10),
+                        bgcolor=SUCCESS,
+                        duration=4000,
+                    )
+                    page.snack_bar.open = True
+                    layout_customer_orders()  # Refresh
+                
+                payment_dialog = ft.AlertDialog(
+                    modal=True,
+                    title=ft.Row([
+                        ft.Icon(ft.Icons.VERIFIED_USER, color=SUCCESS, size=28),
+                        ft.Text("Verify Payment", weight=ft.FontWeight.BOLD, color=PRIMARY_DARK),
+                    ], spacing=10),
+                    content=ft.Container(
+                        content=ft.Column([
+                            ft.Text("Please verify that payment has been received:", size=14, color=TEXT_MID),
+                            ft.Container(height=10),
+                            ft.Container(
+                                content=ft.Column([
+                                    ft.Row([ft.Text("Customer:", size=12, color=TEXT_LIGHT), ft.Text(cust_name, size=12, color=TEXT_DARK, weight=ft.FontWeight.W_500)], spacing=8),
+                                    ft.Row([ft.Text("Order #:", size=12, color=TEXT_LIGHT), ft.Text(str(order_id), size=12, color=PRIMARY_MID, weight=ft.FontWeight.W_600)], spacing=8),
+                                    ft.Divider(height=10, color=ACCENT_CREAM),
+                                    ft.Row([
+                                        ft.Text("Amount Due:", size=16, color=TEXT_DARK, weight=ft.FontWeight.W_500),
+                                        ft.Container(expand=True),
+                                        ft.Text(f"₱{ord_total:.2f}", size=22, color=SUCCESS, weight=ft.FontWeight.BOLD),
+                                    ]),
+                                ], spacing=8),
+                                padding=15,
+                                bgcolor=ACCENT_CREAM,
+                                border_radius=10,
+                            ),
+                            ft.Container(height=10),
+                            ft.Row([
+                                ft.Icon(ft.Icons.INFO_OUTLINE, size=16, color=TEXT_LIGHT),
+                                ft.Text("Only mark as paid after receiving the exact amount.", size=11, color=TEXT_LIGHT, italic=True),
+                            ], spacing=6),
+                        ], spacing=5),
+                        width=320,
+                    ),
+                    actions=[
+                        ft.OutlinedButton(
+                            "Cancel",
+                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                            on_click=lambda e: page.close(payment_dialog),
+                        ),
+                        ft.ElevatedButton(
+                            "Verify & Mark Paid",
+                            icon=ft.Icons.CHECK_CIRCLE,
+                            bgcolor=SUCCESS,
+                            color=ACCENT_CREAM,
+                            style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=8)),
+                            on_click=confirm_payment,
+                        ),
+                    ],
+                    actions_alignment=ft.MainAxisAlignment.END,
                 )
-                page.snack_bar.open = True
-                layout_customer_orders()  # Refresh
+                page.open(payment_dialog)
             
             def complete_order_clicked(order_id):
                 complete_order(order_id)
@@ -3040,7 +3281,29 @@ def main(page: ft.Page):
                     'completed': SUCCESS,
                     'cancelled': ERROR
                 }
-                payment_color = SUCCESS if payment_status == 'paid' else ERROR
+                
+                # Payment indicator with icon
+                if payment_status == 'paid':
+                    payment_badge = ft.Container(
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.VERIFIED, size=14, color=ACCENT_CREAM),
+                            ft.Text("Paid", size=11, color=ACCENT_CREAM, weight=ft.FontWeight.W_500),
+                        ], spacing=4),
+                        bgcolor=SUCCESS,
+                        padding=ft.padding.symmetric(horizontal=10, vertical=3),
+                        border_radius=12,
+                    )
+                else:
+                    payment_badge = ft.Container(
+                        content=ft.Row([
+                            ft.Icon(ft.Icons.WARNING_AMBER, size=14, color="#FFFFFF"),
+                            ft.Text("Unpaid", size=11, color="#FFFFFF", weight=ft.FontWeight.W_600),
+                        ], spacing=4),
+                        bgcolor=ERROR,
+                        padding=ft.padding.symmetric(horizontal=10, vertical=3),
+                        border_radius=12,
+                        border=ft.border.all(2, "#C62828"),
+                    )
                 
                 # Action buttons based on status
                 action_buttons = []
@@ -3077,14 +3340,7 @@ def main(page: ft.Page):
                                     border_radius=12,
                                 )
                             ),
-                            ft.DataCell(
-                                ft.Container(
-                                    content=ft.Text(payment_status.capitalize(), size=11, color=ACCENT_CREAM),
-                                    bgcolor=payment_color,
-                                    padding=ft.padding.symmetric(horizontal=10, vertical=3),
-                                    border_radius=12,
-                                )
-                            ),
+                            ft.DataCell(payment_badge),
                             ft.DataCell(ft.Text(f"₱{ord_total:.2f}", color=TEXT_DARK, weight=ft.FontWeight.W_500)),
                             ft.DataCell(ft.Text(str(ord_date)[:16] if ord_date else "", color=TEXT_MID, size=11)),
                             ft.DataCell(ft.Row(action_buttons, spacing=0)),
@@ -3537,7 +3793,7 @@ def main(page: ft.Page):
                                 ], spacing=8),
                                 ft.Container(height=10),
                                 ft.Row(
-                                    sales_chart_items if sales_chart_items else [ft.Text("No sales data yet", color=TEXT_LIGHT)],
+                                    sales_chart_items if sales_chart_items else [ft.Row([ft.Icon(ft.Icons.SHOW_CHART, size=16, color=TEXT_LIGHT), ft.Text("No sales data yet", color=TEXT_LIGHT)], spacing=5)],
                                     alignment=ft.MainAxisAlignment.SPACE_AROUND,
                                 ),
                             ]),
@@ -3555,7 +3811,7 @@ def main(page: ft.Page):
                                 ], spacing=8),
                                 ft.Container(height=10),
                                 ft.Row(
-                                    orders_chart_items if orders_chart_items else [ft.Text("No orders data yet", color=TEXT_LIGHT)],
+                                    orders_chart_items if orders_chart_items else [ft.Row([ft.Icon(ft.Icons.INVENTORY_2_OUTLINED, size=16, color=TEXT_LIGHT), ft.Text("No orders data yet", color=TEXT_LIGHT)], spacing=5)],
                                     alignment=ft.MainAxisAlignment.SPACE_AROUND,
                                 ),
                             ]),
@@ -3578,7 +3834,7 @@ def main(page: ft.Page):
                                 ], spacing=8),
                                 ft.Container(height=10),
                                 ft.Row(
-                                    monthly_chart_items if monthly_chart_items else [ft.Text("No revenue data yet", color=TEXT_LIGHT)],
+                                    monthly_chart_items if monthly_chart_items else [ft.Row([ft.Icon(ft.Icons.PAYMENTS_OUTLINED, size=16, color=TEXT_LIGHT), ft.Text("No revenue data yet", color=TEXT_LIGHT)], spacing=5)],
                                     alignment=ft.MainAxisAlignment.SPACE_AROUND,
                                 ),
                             ]),
@@ -3596,7 +3852,7 @@ def main(page: ft.Page):
                                 ], spacing=8),
                                 ft.Container(height=10),
                                 ft.Column(
-                                    status_items if status_items else [ft.Text("No order status data", color=TEXT_LIGHT)],
+                                    status_items if status_items else [ft.Row([ft.Icon(ft.Icons.INFO_OUTLINE, size=16, color=TEXT_LIGHT), ft.Text("No order status data", color=TEXT_LIGHT)], spacing=5)],
                                     spacing=0,
                                 ),
                             ]),
@@ -3619,7 +3875,7 @@ def main(page: ft.Page):
                                 ], spacing=8),
                                 ft.Container(height=10),
                                 ft.Column(
-                                    owner_rows if owner_rows else [ft.Text("No business owners yet", color=TEXT_LIGHT)],
+                                    owner_rows if owner_rows else [ft.Row([ft.Icon(ft.Icons.STORE_OUTLINED, size=16, color=TEXT_LIGHT), ft.Text("No business owners yet", color=TEXT_LIGHT)], spacing=5)],
                                     spacing=5,
                                 ),
                             ]),
@@ -3637,7 +3893,7 @@ def main(page: ft.Page):
                                 ], spacing=8),
                                 ft.Container(height=10),
                                 ft.Column(
-                                    product_rows if product_rows else [ft.Text("No product data yet", color=TEXT_LIGHT)],
+                                    product_rows if product_rows else [ft.Row([ft.Icon(ft.Icons.COFFEE_OUTLINED, size=16, color=TEXT_LIGHT), ft.Text("No product data yet", color=TEXT_LIGHT)], spacing=5)],
                                     spacing=5,
                                 ),
                             ]),
@@ -3774,12 +4030,14 @@ def main(page: ft.Page):
                         border_radius=15,
                     ) if user_rows else ft.Container(
                         content=ft.Column([
-                            ft.Icon(ft.Icons.PEOPLE_OUTLINE, size=60, color=TEXT_LIGHT),
-                            ft.Text("No business owners yet", size=18, color=TEXT_MID),
+                            ft.Icon(ft.Icons.STOREFRONT_OUTLINED, size=60, color=TEXT_LIGHT),
+                            ft.Text("No business owners yet", size=18, color=TEXT_MID, weight=ft.FontWeight.W_500),
+                            ft.Text("Create business owner accounts to get started", size=14, color=TEXT_LIGHT),
                         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=10),
                         bgcolor=BG_CARD,
                         padding=50,
                         border_radius=15,
+                        alignment=ft.alignment.center,
                     ),
                 ], expand=True, scroll=ft.ScrollMode.AUTO),
                 padding=25,
@@ -3790,6 +4048,8 @@ def main(page: ft.Page):
         
         # Create Admin Page
         def sa_create_admin():
+            owners = [u for u in get_all_business_owners() if str(u[3]).lower() == "owner"]
+
             new_admin_username = ft.TextField(
                 label="Username",
                 hint_text="Enter admin username",
@@ -3818,6 +4078,21 @@ def main(page: ft.Page):
                 ],
                 border_radius=10,
             )
+            owner_assignment = ft.Dropdown(
+                label="Assign To Owner",
+                width=300,
+                visible=False,
+                border_radius=10,
+                options=[ft.dropdown.Option(str(owner[0]), owner[1]) for owner in owners],
+            )
+
+            def role_changed(e):
+                owner_assignment.visible = new_admin_role.value == "staff"
+                if new_admin_role.value != "staff":
+                    owner_assignment.value = None
+                page.update()
+
+            new_admin_role.on_change = role_changed
             
             def create_admin_clicked(e):
                 if not new_admin_username.value or not new_admin_password.value:
@@ -3828,8 +4103,25 @@ def main(page: ft.Page):
                     page.snack_bar.open = True
                     page.update()
                     return
+
+                assigned_owner_id = None
+                if new_admin_role.value == "staff":
+                    if not owner_assignment.value:
+                        page.snack_bar = ft.SnackBar(
+                            content=ft.Row([ft.Icon(ft.Icons.ERROR, color=ACCENT_CREAM), ft.Text("Please assign a business owner for staff", color=ACCENT_CREAM)], spacing=10),
+                            bgcolor=ERROR
+                        )
+                        page.snack_bar.open = True
+                        page.update()
+                        return
+                    assigned_owner_id = int(owner_assignment.value)
                 
-                success, message = register_user(new_admin_username.value, new_admin_password.value, new_admin_role.value)
+                success, message = register_user(
+                    new_admin_username.value,
+                    new_admin_password.value,
+                    new_admin_role.value,
+                    assigned_owner_id,
+                )
                 if success:
                     page.snack_bar = ft.SnackBar(
                         content=ft.Row([ft.Icon(ft.Icons.CHECK_CIRCLE, color=ACCENT_CREAM), ft.Text(f"Admin '{new_admin_username.value}' created successfully!", color=ACCENT_CREAM)], spacing=10),
@@ -3838,6 +4130,8 @@ def main(page: ft.Page):
                     new_admin_username.value = ""
                     new_admin_password.value = ""
                     new_admin_role.value = "owner"
+                    owner_assignment.value = None
+                    owner_assignment.visible = False
                 else:
                     page.snack_bar = ft.SnackBar(
                         content=ft.Row([ft.Icon(ft.Icons.ERROR, color=ACCENT_CREAM), ft.Text(message, color=ACCENT_CREAM)], spacing=10),
@@ -3876,6 +4170,8 @@ def main(page: ft.Page):
                             new_admin_password,
                             ft.Container(height=10),
                             new_admin_role,
+                            ft.Container(height=10),
+                            owner_assignment,
                             ft.Container(height=20),
                             ft.ElevatedButton(
                                 "Create Admin",
@@ -3980,7 +4276,7 @@ def main(page: ft.Page):
         cart_items = []
         
         # Customer Dashboard with Best Sellers and Menu
-        def cp_dashboard():
+        def cp_dashboard(filter_cat=None):
             best_sellers = get_best_sellers(business_owner_id, 3)
             all_products = get_products_for_customer(business_owner_id)
             products_list = [{"id": p[0], "name": p[1], "category": p[2], "price": p[3]} for p in all_products]
@@ -4018,7 +4314,19 @@ def main(page: ft.Page):
                         )
                     )
             else:
-                best_seller_cards.append(ft.Text("No best sellers yet - be the first to order!", color=TEXT_MID))
+                best_seller_cards.append(
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Icon(ft.Icons.STAR_BORDER, size=50, color=ACCENT_WARM),
+                            ft.Text("No best sellers yet", size=16, color=TEXT_MID, weight=ft.FontWeight.W_500),
+                            ft.Text("Be the first to order!", size=14, color=TEXT_LIGHT),
+                        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
+                        padding=20,
+                        border_radius=15,
+                        bgcolor=BG_CARD,
+                        width=180,
+                    )
+                )
             
             def add_to_cart(name, category, price):
                 # Check if item already in cart
@@ -4041,33 +4349,142 @@ def main(page: ft.Page):
                 page.snack_bar.open = True
                 page.update()
             
-            # Product grid
+            # Category icons and descriptions
+            CATEGORY_ICONS = {
+                "Coffee": ft.Icons.LOCAL_CAFE,
+                "Tea": ft.Icons.EMOJI_FOOD_BEVERAGE,
+                "Cold Drinks": ft.Icons.LOCAL_DRINK,
+                "Smoothies": ft.Icons.BLENDER,
+                "Pastry": ft.Icons.BAKERY_DINING,
+                "Sandwiches": ft.Icons.LUNCH_DINING,
+                "Snacks": ft.Icons.FASTFOOD,
+                "Meals": ft.Icons.RESTAURANT,
+                "Breakfast": ft.Icons.FREE_BREAKFAST,
+                "Desserts": ft.Icons.ICECREAM,
+                "Specialty": ft.Icons.STAR,
+                "Beverages": ft.Icons.LOCAL_DRINK,
+            }
+            CATEGORY_COLORS = {
+                "Coffee": PRIMARY_LIGHT,
+                "Tea": "#66BB6A",
+                "Cold Drinks": "#64B5F6",
+                "Smoothies": "#FF8A65",
+                "Pastry": ACCENT_GOLD,
+                "Sandwiches": "#A1887F",
+                "Snacks": "#FFB74D",
+                "Meals": "#81C784",
+                "Breakfast": "#FFD54F",
+                "Desserts": "#F48FB1",
+                "Specialty": "#9575CD",
+                "Beverages": "#4DD0E1",
+            }
+            CATEGORY_DESCRIPTIONS = {
+                "Coffee": "Freshly brewed",
+                "Tea": "Hot & calming",
+                "Cold Drinks": "Cool & refreshing",
+                "Smoothies": "Blended fresh",
+                "Pastry": "Baked fresh daily",
+                "Sandwiches": "Made to order",
+                "Snacks": "Quick bites",
+                "Meals": "Hearty servings",
+                "Breakfast": "Start your day",
+                "Desserts": "Sweet treats",
+                "Specialty": "Chef's special",
+                "Beverages": "Refreshing drinks",
+            }
+
+            # Category filter chips
+            available_cats = ["All"] + sorted(set(p['category'] for p in products_list))
+            filter_chips = ft.Row(
+                [
+                    ft.Container(
+                        content=ft.Text(
+                            cat,
+                            size=12,
+                            color=ACCENT_CREAM if (filter_cat == cat or (cat == "All" and not filter_cat)) else TEXT_DARK,
+                            weight=ft.FontWeight.W_500,
+                        ),
+                        bgcolor=PRIMARY_MID if (filter_cat == cat or (cat == "All" and not filter_cat)) else ACCENT_CREAM,
+                        padding=ft.padding.symmetric(horizontal=14, vertical=7),
+                        border_radius=20,
+                        border=ft.border.all(1, PRIMARY_MID),
+                        on_click=lambda e, c=cat: cp_dashboard(filter_cat=None if c == "All" else c),
+                        ink=True,
+                    )
+                    for cat in available_cats
+                ],
+                spacing=8,
+                scroll=ft.ScrollMode.AUTO,
+            )
+
+            # Filter products by selected category
+            displayed_products = [
+                p for p in products_list
+                if not filter_cat or p['category'] == filter_cat
+            ]
+            
+            # Product grid with enhanced cards
             product_cards = []
-            for product in products_list:
+            for product in displayed_products:
+                cat_icon = CATEGORY_ICONS.get(product['category'], ft.Icons.LOCAL_CAFE)
+                cat_color = CATEGORY_COLORS.get(product['category'], PRIMARY_LIGHT)
+                cat_desc = CATEGORY_DESCRIPTIONS.get(product['category'], "")
+                
                 product_cards.append(
                     ft.Container(
                         content=ft.Column([
-                            ft.Icon(ft.Icons.LOCAL_CAFE if product['category'] == 'Coffee' else ft.Icons.CAKE, size=32, color=PRIMARY_LIGHT),
-                            ft.Text(product['name'], size=13, weight=ft.FontWeight.W_500, color=TEXT_DARK, text_align=ft.TextAlign.CENTER),
+                            # Category icon with background
                             ft.Container(
-                                content=ft.Text(product['category'], size=10, color=ACCENT_CREAM),
-                                bgcolor=PRIMARY_LIGHT if product['category'] == 'Coffee' else ACCENT_GOLD,
-                                padding=ft.padding.symmetric(horizontal=8, vertical=2),
-                                border_radius=8,
+                                content=ft.Icon(cat_icon, size=36, color=ACCENT_CREAM),
+                                bgcolor=cat_color,
+                                padding=12,
+                                border_radius=50,
                             ),
-                            ft.Text(f"₱{product['price']:.2f}", size=14, weight=ft.FontWeight.BOLD, color=SUCCESS),
-                            ft.IconButton(
-                                icon=ft.Icons.ADD_CIRCLE,
-                                icon_color=PRIMARY_MID,
-                                icon_size=28,
+                            ft.Container(height=5),
+                            # Product name
+                            ft.Text(
+                                product['name'], 
+                                size=14, 
+                                weight=ft.FontWeight.W_600, 
+                                color=TEXT_DARK, 
+                                text_align=ft.TextAlign.CENTER,
+                                max_lines=2,
+                                overflow=ft.TextOverflow.ELLIPSIS,
+                            ),
+                            # Category badge
+                            ft.Container(
+                                content=ft.Text(product['category'], size=10, color=ACCENT_CREAM, weight=ft.FontWeight.W_500),
+                                bgcolor=cat_color,
+                                padding=ft.padding.symmetric(horizontal=10, vertical=3),
+                                border_radius=10,
+                            ),
+                            # Description
+                            ft.Text(cat_desc, size=10, color=TEXT_LIGHT, italic=True),
+                            # Price
+                            ft.Text(f"₱{product['price']:.2f}", size=16, weight=ft.FontWeight.BOLD, color=SUCCESS),
+                            # Add to cart button
+                            ft.Container(
+                                content=ft.Row([
+                                    ft.Icon(ft.Icons.ADD_SHOPPING_CART, size=16, color=ACCENT_CREAM),
+                                    ft.Text("Add", size=12, color=ACCENT_CREAM, weight=ft.FontWeight.W_500),
+                                ], spacing=4, alignment=ft.MainAxisAlignment.CENTER),
+                                bgcolor=PRIMARY_MID,
+                                padding=ft.padding.symmetric(horizontal=16, vertical=8),
+                                border_radius=20,
                                 on_click=lambda e, n=product['name'], c=product['category'], p=product['price']: add_to_cart(n, c, p),
+                                ink=True,
                             ),
-                        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=3),
-                        padding=15,
+                        ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=4),
+                        padding=18,
                         bgcolor=BG_CARD,
-                        border_radius=12,
+                        border_radius=15,
                         border=ft.border.all(1, ACCENT_CREAM),
-                        width=140,
+                        width=165,
+                        shadow=ft.BoxShadow(
+                            color=ft.Colors.with_opacity(0.05, ft.Colors.BLACK),
+                            blur_radius=8,
+                            offset=ft.Offset(0, 2)
+                        ),
                     )
                 )
             
@@ -4088,11 +4505,27 @@ def main(page: ft.Page):
                     ft.Container(height=25),
                     
                     # Menu Section
-                    ft.Text("📋 Full Menu", size=18, weight=ft.FontWeight.W_600, color=PRIMARY_DARK),
+                    ft.Row([
+                        ft.Text("📋 Full Menu", size=18, weight=ft.FontWeight.W_600, color=PRIMARY_DARK),
+                        ft.Text(
+                            f"  ({len(displayed_products)} items)",
+                            size=14, color=TEXT_LIGHT, italic=True,
+                        ),
+                    ], spacing=0),
+                    ft.Container(height=8),
+                    filter_chips,
                     ft.Container(height=10),
                     ft.Container(
                         content=ft.Row(
-                            product_cards,
+                            product_cards if product_cards else [
+                                ft.Container(
+                                    content=ft.Column([
+                                        ft.Icon(ft.Icons.SEARCH_OFF, size=50, color=TEXT_LIGHT),
+                                        ft.Text("No products in this category", size=16, color=TEXT_MID),
+                                    ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=8),
+                                    padding=40,
+                                )
+                            ],
                             spacing=15,
                             wrap=True,
                             scroll=ft.ScrollMode.AUTO,
@@ -4245,7 +4678,9 @@ def main(page: ft.Page):
                             border=ft.border.only(bottom=ft.BorderSide(1, ACCENT_CREAM)),
                         )
                     )
+              
                 
+                  
                 dialog = ft.AlertDialog(
                     modal=True,
                     title=ft.Text(f"Order #{order_id}", weight=ft.FontWeight.BOLD, color=PRIMARY_DARK),
