@@ -365,9 +365,16 @@ def main(page: ft.Page):
             username = (username_field.value or "").strip()
             password = password_field.value or ""
             confirm_password = confirm_password_field.value or ""
+            selected_role = account_type_dropdown.value
 
             if not owners:
                 message.value = "No owner account available yet. Ask superadmin to create an owner first."
+                message.color = ERROR
+                page.update()
+                return
+
+            if not selected_role:
+                message.value = "Please select an account type."
                 message.color = ERROR
                 page.update()
                 return
@@ -403,14 +410,18 @@ def main(page: ft.Page):
                 page.update()
                 return
 
-            if not owner_assignment.value:
-                message.value = "Please select a business owner/client!"
+            if not business_owner_assignment.value:
+                message.value = "Please select a business owner!"
                 message.color = ERROR
                 page.update()
                 return
 
             # Register user
-            success, msg = register_user(username, password, "staff", int(owner_assignment.value))
+            owner_id = int(business_owner_assignment.value)
+            if selected_role == "customer":
+                success, msg = create_customer(username, password, owner_id)
+            else:
+                success, msg = register_user(username, password, "staff", owner_id)
             
             if success:
                 page.snack_bar = ft.SnackBar(
@@ -465,8 +476,24 @@ def main(page: ft.Page):
             on_submit=signup_clicked
         )
 
-        owner_assignment = ft.Dropdown(
-            label="Business Owner / Client",
+        account_type_dropdown = ft.Dropdown(
+            label="Account Type",
+            width=320,
+            color=TEXT_DARK,
+            border_color=PRIMARY_LIGHT,
+            focused_border_color=PRIMARY_MID,
+            label_style=ft.TextStyle(color=TEXT_MID),
+            border_radius=12,
+            prefix_icon=ft.Icons.PERSON_SEARCH,
+            options=[
+                ft.dropdown.Option("staff", "Staff"),
+                ft.dropdown.Option("customer", "Customer"),
+            ],
+            value="staff",
+        )
+
+        business_owner_assignment = ft.Dropdown(
+            label="Assign Business Owner",
             width=320,
             color=TEXT_DARK,
             border_color=PRIMARY_LIGHT,
@@ -493,9 +520,10 @@ def main(page: ft.Page):
                                     username_field,
                                     password_field,
                                     confirm_password_field,
-                                    owner_assignment,
+                                    account_type_dropdown,
+                                    business_owner_assignment,
                                     ft.Text(
-                                        "Select the client/business owner this staff account belongs to.",
+                                        "Choose Staff for dashboard access or Customer for the customer portal.",
                                         size=12,
                                         color=TEXT_LIGHT,
                                         text_align=ft.TextAlign.CENTER,
