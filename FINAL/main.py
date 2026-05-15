@@ -4847,6 +4847,6 @@ def main(page: ft.Page):
 ft.app(
     target=main,
     host="0.0.0.0",
-    port=int(os.environ.get("PORT", 8080)),
+    port=38703,
     view=ft.WEB_BROWSER
 )
